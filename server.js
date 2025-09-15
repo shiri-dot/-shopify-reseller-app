@@ -346,6 +346,15 @@ app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Admin interface routes
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+app.get("/admin/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
 // Create uploads directory if it doesn't exist
 if (!fs.existsSync("uploads")) {
   fs.mkdirSync("uploads");
