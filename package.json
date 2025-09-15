@@ -1,0 +1,40 @@
+{
+  "name": "shopify-reseller-app",
+  "version": "1.0.0",
+  "description": "B2B2C ecommerce platform with reseller management for Shopify",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "npm run build:client",
+    "build:client": "webpack --mode production",
+    "dev:client": "webpack --mode development --watch"
+  },
+  "dependencies": {
+    "@shopify/shopify-api": "^7.5.0",
+    "@shopify/shopify-app-express": "^2.0.0",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "multer": "^1.4.5-lts.1",
+    "csv-parser": "^3.0.0",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "css-loader": "^6.8.1",
+    "style-loader": "^3.3.3",
+    "html-webpack-plugin": "^5.5.3"
+  },
+  "keywords": [
+    "shopify",
+    "ecommerce",
+    "b2b2c",
+    "reseller"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

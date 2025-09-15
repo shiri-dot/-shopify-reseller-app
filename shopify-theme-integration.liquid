@@ -1,0 +1,70 @@
+{% comment %}
+  Shopify Theme Integration for Reseller App
+  Add this code to your product template (product.liquid) or create a new section
+{% endcomment %}
+
+{% comment %} Load reseller data for current product {% endcomment %}
+{% assign product_handle = product.handle %}
+{% assign resellers_json = '' %}
+
+{% comment %} This would typically be populated via your app's API {% endcomment %}
+{% comment %} For now, we'll create a placeholder structure {% endcomment %}
+
+<div id="reseller-app-container" data-product-handle="{{ product_handle }}">
+  <div class="reseller-section">
+    <h3 class="reseller-section-title">Find Resellers</h3>
+    <p class="reseller-section-description">This product is available through our authorized resellers.</p>
+    
+    <div class="reseller-loading" id="reseller-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading resellers...</p>
+    </div>
+    
+    <div class="reseller-content" id="reseller-content" style="display: none;">
+      <div class="reseller-controls">
+        <div class="reseller-dropdown-container">
+          <label for="reseller-select">Select Resellers:</label>
+          <select id="reseller-select" multiple class="reseller-select">
+            <!-- Options will be populated dynamically -->
+          </select>
+          <div class="reseller-actions">
+            <button type="button" id="select-all-resellers" class="btn btn-secondary btn-sm">Select All</button>
+            <button type="button" id="clear-resellers" class="btn btn-secondary btn-sm">Clear All</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="selected-resellers" class="selected-resellers">
+        <!-- Selected resellers will be displayed here -->
+      </div>
+      
+      <div id="reseller-map-container" class="reseller-map-container" style="display: none;">
+        <h4>Reseller Locations</h4>
+        <div id="reseller-map" class="reseller-map"></div>
+      </div>
+    </div>
+    
+    <div class="reseller-error" id="reseller-error" style="display: none;">
+      <p>Unable to load reseller information. Please try again later.</p>
+    </div>
+  </div>
+</div>
+
+{% comment %} Include the reseller app styles {% endcomment %}
+{{ 'reseller-app.css' | asset_url | stylesheet_tag }}
+
+{% comment %} Include the reseller app JavaScript {% endcomment %}
+<script src="{{ 'reseller-app.js' | asset_url }}" defer></script>
+
+{% comment %} Initialize the reseller app {% endcomment %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ResellerApp !== 'undefined') {
+      ResellerApp.init({
+        productHandle: '{{ product_handle }}',
+        apiBaseUrl: '{{ settings.reseller_app_url | default: "https://your-app-url.ngrok.io" }}',
+        googleMapsApiKey: '{{ settings.google_maps_api_key }}'
+      });
+    }
+  });
+</script>

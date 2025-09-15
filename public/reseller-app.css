@@ -1,0 +1,347 @@
+/* Reseller App Styles for Shopify Theme Integration */
+
+.reseller-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.reseller-section-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.reseller-section-description {
+  margin: 0 0 1.5rem 0;
+  color: #6c757d;
+}
+
+.reseller-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.reseller-error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+}
+
+.reseller-dropdown-container {
+  margin-bottom: 1rem;
+}
+
+.reseller-dropdown-container label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.reseller-select {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 0.875rem;
+}
+
+.reseller-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.selected-resellers {
+  margin-top: 1.5rem;
+}
+
+.selected-resellers h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.reseller-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.reseller-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 1rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.reseller-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reseller-card-header {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.reseller-card-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.reseller-card-logo-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.reseller-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reseller-card-name {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  word-wrap: break-word;
+}
+
+.reseller-card-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6c757d;
+  word-wrap: break-word;
+}
+
+.reseller-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reseller-map-container {
+  margin-top: 1.5rem;
+}
+
+.reseller-map-container h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.reseller-map {
+  width: 100%;
+  height: 300px;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.no-resellers {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.reseller-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.3s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.reseller-notification-success {
+  background: #28a745;
+}
+
+.reseller-notification-error {
+  background: #dc3545;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .reseller-section {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+
+  .reseller-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .reseller-card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .reseller-card-actions {
+    justify-content: center;
+  }
+
+  .reseller-actions {
+    flex-direction: column;
+  }
+
+  .reseller-notification {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .reseller-section {
+    padding: 0.75rem;
+  }
+
+  .reseller-section-title {
+    font-size: 1.1rem;
+  }
+
+  .reseller-card {
+    padding: 0.75rem;
+  }
+
+  .reseller-map {
+    height: 250px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .reseller-section {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  .reseller-section-title {
+    color: #e2e8f0;
+  }
+
+  .reseller-section-description {
+    color: #a0aec0;
+  }
+
+  .reseller-card {
+    background: #1a202c;
+    border-color: #4a5568;
+  }
+
+  .reseller-card-name {
+    color: #e2e8f0;
+  }
+
+  .reseller-card-description {
+    color: #a0aec0;
+  }
+
+  .reseller-select {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .reseller-dropdown-container label {
+    color: #e2e8f0;
+  }
+
+  .no-resellers {
+    color: #a0aec0;
+  }
+}

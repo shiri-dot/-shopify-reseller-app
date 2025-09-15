@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopify Reseller App</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places"></script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Navigation -->
+      <nav class="navbar">
+        <div class="nav-container">
+          <h1 class="nav-title">Reseller Management</h1>
+          <div class="nav-buttons">
+            <button id="viewResellers" class="nav-btn active">Resellers</button>
+            <button id="addReseller" class="nav-btn">Add Reseller</button>
+            <button id="importResellers" class="nav-btn">Import CSV</button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Resellers List View -->
+        <div id="resellersView" class="view active">
+          <div class="view-header">
+            <h2>Resellers</h2>
+            <div class="search-container">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search resellers..."
+                class="search-input"
+              />
+              <button id="searchBtn" class="search-btn">Search</button>
+            </div>
+          </div>
+
+          <div class="resellers-container">
+            <div class="resellers-list">
+              <div id="resellersList" class="resellers-list-content">
+                <!-- Resellers will be loaded here -->
+              </div>
+            </div>
+            <div class="map-container">
+              <div id="map" class="map"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add/Edit Reseller Form -->
+        <div id="resellerFormView" class="view">
+          <div class="form-container">
+            <h2 id="formTitle">Add New Reseller</h2>
+            <form id="resellerForm" class="reseller-form">
+              <div class="form-group">
+                <label for="resellerName">Reseller Name *</label>
+                <input type="text" id="resellerName" name="name" required />
+              </div>
+
+              <div class="form-group">
+                <label for="resellerLogo">Logo URL</label>
+                <input type="url" id="resellerLogo" name="logo_url" />
+              </div>
+
+              <div class="form-group">
+                <label for="resellerDescription">Description</label>
+                <textarea
+                  id="resellerDescription"
+                  name="description"
+                  rows="3"
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="resellerWebsite">Website URL</label>
+                <input type="url" id="resellerWebsite" name="website_url" />
+              </div>
+
+              <div class="form-group">
+                <label for="resellerLocation">Location URL</label>
+                <input type="url" id="resellerLocation" name="location_url" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="resellerLatitude">Latitude</label>
+                  <input
+                    type="number"
+                    id="resellerLatitude"
+                    name="latitude"
+                    step="any"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="resellerLongitude">Longitude</label>
+                  <input
+                    type="number"
+                    id="resellerLongitude"
+                    name="longitude"
+                    step="any"
+                  />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" id="cancelBtn" class="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Save Reseller
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Import CSV View -->
+        <div id="importView" class="view">
+          <div class="import-container">
+            <h2>Import Resellers from CSV</h2>
+            <div class="import-info">
+              <p>Upload a CSV file with the following columns:</p>
+              <ul>
+                <li><strong>name</strong> (required) - Reseller name</li>
+                <li><strong>logo_url</strong> - Logo image URL</li>
+                <li><strong>description</strong> - Short description</li>
+                <li><strong>website_url</strong> - Website URL</li>
+                <li><strong>location_url</strong> - Location URL</li>
+                <li><strong>latitude</strong> - Latitude coordinate</li>
+                <li><strong>longitude</strong> - Longitude coordinate</li>
+              </ul>
+            </div>
+
+            <form id="importForm" class="import-form">
+              <div class="form-group">
+                <label for="csvFile">Select CSV File</label>
+                <input
+                  type="file"
+                  id="csvFile"
+                  name="csv"
+                  accept=".csv"
+                  required
+                />
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  id="cancelImportBtn"
+                  class="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Import Resellers
+                </button>
+              </div>
+            </form>
+
+            <div
+              id="importResults"
+              class="import-results"
+              style="display: none"
+            >
+              <!-- Import results will be shown here -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none">
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Modal for confirmation dialogs -->
+    <div id="modal" class="modal" style="display: none">
+      <div class="modal-content">
+        <h3 id="modalTitle">Confirm Action</h3>
+        <p id="modalMessage">Are you sure you want to perform this action?</p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="btn btn-secondary">Cancel</button>
+          <button id="modalConfirm" class="btn btn-danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
