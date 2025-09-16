@@ -348,18 +348,24 @@ function renderResellersTable() {
   if (resellers.length === 0) {
     resellersTableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="empty-state">
-                    <h3>No resellers found</h3>
-                    <p>${
-                      searchQuery
-                        ? "Try adjusting your search criteria"
-                        : "Get started by adding your first reseller"
-                    }</p>
-                    ${
-                      !searchQuery
-                        ? '<button class="btn btn-primary" onclick="showAddResellerModal()">Add Reseller</button>'
-                        : ""
-                    }
+                <td colspan="6" class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle" style="text-align: center; padding: 2rem;">
+                    <div class="Polaris-EmptyState">
+                        <div class="Polaris-EmptyState__Section">
+                            <div class="Polaris-EmptyState__Details">
+                                <h3 class="Polaris-EmptyState__Heading">No resellers found</h3>
+                                <p class="Polaris-EmptyState__Content">${
+                                  searchQuery
+                                    ? "Try adjusting your search criteria"
+                                    : "Get started by adding your first reseller"
+                                }</p>
+                                ${
+                                  !searchQuery
+                                    ? '<button class="Polaris-Button Polaris-Button--primary" onclick="showAddResellerModal()"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Add Reseller</span></span></button>'
+                                    : ""
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </td>
             </tr>
         `;
@@ -374,46 +380,50 @@ function renderResellersTable() {
     .map(
       (reseller) => `
         <tr>
-            <td>
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
                 ${
                   reseller.logo_url
-                    ? `<img src="${reseller.logo_url}" alt="${reseller.name}" class="table-logo" onerror="this.parentElement.innerHTML='<div class=\\"table-logo-placeholder\\">No Logo</div>'">`
-                    : '<div class="table-logo-placeholder">No Logo</div>'
+                    ? `<img src="${reseller.logo_url}" alt="${reseller.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" onerror="this.parentElement.innerHTML='<div style=\\"width: 40px; height: 40px; background: #f6f6f7; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.75rem;\\">No Logo</div>'">`
+                    : '<div style="width: 40px; height: 40px; background: #f6f6f7; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.75rem;">No Logo</div>'
                 }
             </td>
-            <td>
-                <div class="reseller-name">${reseller.name}</div>
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
+                <div class="Polaris-TextStyle--variationStrong">${reseller.name}</div>
             </td>
-            <td>
-                <div class="reseller-description">${
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
+                <div class="Polaris-TextStyle--variationSubdued">${
                   reseller.description || "-"
                 }</div>
             </td>
-            <td>
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
                 ${
                   reseller.website_url
-                    ? `<a href="${reseller.website_url}" target="_blank" class="btn btn-primary btn-sm">Visit</a>`
-                    : "-"
+                    ? `<a href="${reseller.website_url}" target="_blank" class="Polaris-Button Polaris-Button--primary Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Visit</span></span></a>`
+                    : '<span class="Polaris-TextStyle--variationSubdued">-</span>'
                 }
             </td>
-            <td>
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
                 ${
                   reseller.location_url
-                    ? `<a href="${reseller.location_url}" target="_blank" class="btn btn-secondary btn-sm">View</a>`
-                    : "-"
+                    ? `<a href="${reseller.location_url}" target="_blank" class="Polaris-Button Polaris-Button--secondary Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">View</span></span></a>`
+                    : '<span class="Polaris-TextStyle--variationSubdued">-</span>'
                 }
             </td>
-            <td>
-                <div class="table-actions">
-                    <button onclick="showEditResellerModal(${JSON.stringify(
-                      reseller
-                    ).replace(
-                      /"/g,
-                      "&quot;"
-                    )})" class="btn btn-secondary btn-sm">Edit</button>
-                    <button onclick="confirmDeleteReseller(${reseller.id}, '${
+            <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
+                <div class="Polaris-Stack Polaris-Stack--alignment-center">
+                    <div class="Polaris-Stack__Item">
+                        <button onclick="showEditResellerModal(${JSON.stringify(
+                          reseller
+                        ).replace(
+                          /"/g,
+                          "&quot;"
+                        )})" class="Polaris-Button Polaris-Button--secondary Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Edit</span></span></button>
+                    </div>
+                    <div class="Polaris-Stack__Item">
+                        <button onclick="confirmDeleteReseller(${reseller.id}, '${
         reseller.name
-      }')" class="btn btn-danger btn-sm">Delete</button>
+      }')" class="Polaris-Button Polaris-Button--destructive Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Delete</span></span></button>
+                    </div>
                 </div>
             </td>
         </tr>
