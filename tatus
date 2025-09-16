@@ -1,0 +1,8 @@
+[33mcommit 66d29a51f17230f2c50f587ad4eab4b705005e6e[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: shirisha <shirishars05@gmail.com>
+Date:   Mon Sep 15 11:32:20 2025 +0530
+
+    Add admin interface routes to fix Not Found issue
+
+ server.js | 9 [32m+++++++++[m
+ 1 file changed, 9 insertions(+)

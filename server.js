@@ -341,18 +341,18 @@ app.post("/api/products/:productId/resellers", (req, res) => {
   );
 });
 
-// Serve the main app
-app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Admin interface routes
+// Admin interface routes (placed BEFORE catch-all)
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 app.get("/admin/*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
+});
+
+// Serve the main app
+app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // Create uploads directory if it doesn't exist
