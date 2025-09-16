@@ -232,18 +232,9 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
 
   const results = [];
   const errors = [];
-  const insertPromises = [];
-
-  const normalize = (val) =>
-    typeof val === "string" ? val.trim() : val ?? null;
 
   fs.createReadStream(req.file.path)
-    .pipe(
-      csv({
-        mapHeaders: ({ header }) => header?.trim().toLowerCase(),
-        mapValues: ({ value }) => normalize(value),
-      })
-    )
+    .pipe(csv())
     .on("data", (row) => {
       try {
         const {
@@ -261,48 +252,39 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
           return;
         }
 
-        insertPromises.push(
-          new Promise((resolve) => {
-            db.run(
-              "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
-              [
-                normalize(name),
-                normalize(logo_url),
-                normalize(description),
-                normalize(website_url),
-                normalize(location_url),
-                latitude ? Number(latitude) : null,
-                longitude ? Number(longitude) : null,
-              ],
-              function (err) {
-                if (err) {
-                  errors.push({ row, error: err.message });
-                } else {
-                  results.push({ id: this.lastID, name: normalize(name) });
-                }
-                resolve();
-              }
-            );
-          })
+        db.run(
+          "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          [
+            name,
+            logo_url,
+            description,
+            website_url,
+            location_url,
+            latitude,
+            longitude,
+          ],
+          function (err) {
+            if (err) {
+              errors.push({ row, error: err.message });
+            } else {
+              results.push({ id: this.lastID, name });
+            }
+          }
         );
       } catch (error) {
         errors.push({ row, error: error.message });
       }
     })
     .on("end", () => {
-      Promise.allSettled(insertPromises).finally(() => {
-        // Clean up uploaded file
-        try {
-          fs.unlinkSync(req.file.path);
-        } catch (_) {}
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
 
-        res.json({
-          message: "Import completed",
-          imported: results.length,
-          errorCount: errors.length,
-          results,
-          errors,
-        });
+      res.json({
+        message: "Import completed",
+        imported: results.length,
+        errors: errors.length,
+        results,
+        errors,
       });
     });
 });
