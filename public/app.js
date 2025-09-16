@@ -1,433 +1,533 @@
-import {
-  AppProvider,
-  Banner,
-  Button,
-  Card,
-  DataTable,
-  FormLayout,
-  Frame,
-  InlineStack,
-  Modal,
-  Page,
-  TextContainer,
-  TextField,
-  Toast,
-} from "@shopify/polaris";
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
+// Global variables
+let resellers = [];
+let selectedReseller = null;
+let map = null;
+let markers = [];
+let editingResellerId = null;
 
-function useResellers() {
-  const [resellers, setResellers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+// DOM elements
+const views = {
+  resellers: document.getElementById("resellersView"),
+  form: document.getElementById("resellerFormView"),
+  import: document.getElementById("importView"),
+};
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const response = await fetch("/api/resellers");
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      setResellers(Array.isArray(data) ? data : []);
-    } catch (e) {
-      setError(e.message || "Failed to load resellers");
-    } finally {
-      setLoading(false);
-    }
-  };
+const navButtons = {
+  viewResellers: document.getElementById("viewResellers"),
+  addReseller: document.getElementById("addReseller"),
+  importResellers: document.getElementById("importResellers"),
+};
 
-  useEffect(() => {
-    load();
-  }, []);
+const form = document.getElementById("resellerForm");
+const resellersList = document.getElementById("resellersList");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const importForm = document.getElementById("importForm");
+const loadingOverlay = document.getElementById("loadingOverlay");
+const modal = document.getElementById("modal");
 
-  return { resellers, loading, error, reload: load };
+// Initialize the app
+document.addEventListener("DOMContentLoaded", function () {
+  initializeApp();
+  setupEventListeners();
+  loadResellers();
+  initializeMap();
+});
+
+function initializeApp() {
+  // Set initial view
+  showView("resellers");
 }
 
-function ResellerTable() {
-  const { resellers, loading, error, reload } = useResellers();
-  const [editingReseller, setEditingReseller] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteReseller, setDeleteReseller] = useState(null);
-  const [toast, setToast] = useState(null);
+function setupEventListeners() {
+  // Navigation buttons
+  if (navButtons.viewResellers) {
+    navButtons.viewResellers.addEventListener("click", () =>
+      showView("resellers")
+    );
+  }
+  if (navButtons.addReseller) {
+    navButtons.addReseller.addEventListener("click", () =>
+      showAddResellerForm()
+    );
+  }
+  if (navButtons.importResellers) {
+    navButtons.importResellers.addEventListener("click", () =>
+      showView("import")
+    );
+  }
 
-  const handleEdit = (reseller) => {
-    setEditingReseller(reseller);
-    setShowModal(true);
-  };
+  // Form submission
+  if (form) {
+    form.addEventListener("submit", handleFormSubmit);
+  }
+  if (importForm) {
+    importForm.addEventListener("submit", handleImportSubmit);
+  }
 
-  const handleDelete = (reseller) => {
-    setDeleteReseller(reseller);
-    setShowDeleteModal(true);
-  };
+  // Search functionality
+  if (searchBtn) {
+    searchBtn.addEventListener("click", handleSearch);
+  }
+  if (searchInput) {
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    });
+  }
 
-  const confirmDelete = async () => {
-    if (!deleteReseller) return;
+  // Cancel buttons
+  const cancelBtn = document.getElementById("cancelBtn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => showView("resellers"));
+  }
+  const cancelImportBtn = document.getElementById("cancelImportBtn");
+  if (cancelImportBtn) {
+    cancelImportBtn.addEventListener("click", () => showView("resellers"));
+  }
 
-    try {
-      const response = await fetch(`/api/resellers/${deleteReseller.id}`, {
-        method: "DELETE",
-      });
+  // Modal buttons
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
+  if (modalCancel) modalCancel.addEventListener("click", hideModal);
+  if (modalConfirm) modalConfirm.addEventListener("click", confirmModalAction);
+}
 
-      if (!response.ok) throw new Error("Failed to delete reseller");
+function showView(viewName) {
+  // Hide all views
+  Object.values(views).forEach(
+    (view) => view && view.classList.remove("active")
+  );
 
-      setToast({ content: "Reseller deleted successfully" });
-      setShowDeleteModal(false);
-      setDeleteReseller(null);
-      reload();
-    } catch (error) {
-      setToast({ content: "Failed to delete reseller", error: true });
+  // Remove active class from all nav buttons
+  Object.values(navButtons).forEach(
+    (btn) => btn && btn.classList.remove("active")
+  );
+
+  // Show selected view
+  if (views[viewName]) views[viewName].classList.add("active");
+
+  // Add active class to corresponding nav button
+  if (viewName === "resellers" && navButtons.viewResellers) {
+    navButtons.viewResellers.classList.add("active");
+  } else if (viewName === "form" && navButtons.addReseller) {
+    navButtons.addReseller.classList.add("active");
+  } else if (viewName === "import" && navButtons.importResellers) {
+    navButtons.importResellers.classList.add("active");
+  }
+}
+
+function showAddResellerForm() {
+  editingResellerId = null;
+  const formTitle = document.getElementById("formTitle");
+  if (formTitle) formTitle.textContent = "Add New Reseller";
+  if (form) form.reset();
+  showView("form");
+}
+
+function showEditResellerForm(reseller) {
+  editingResellerId = reseller.id;
+  const formTitle = document.getElementById("formTitle");
+  if (formTitle) formTitle.textContent = "Edit Reseller";
+
+  // Populate form with reseller data
+  const nameEl = document.getElementById("resellerName");
+  const logoEl = document.getElementById("resellerLogo");
+  const descEl = document.getElementById("resellerDescription");
+  const websiteEl = document.getElementById("resellerWebsite");
+  const locationEl = document.getElementById("resellerLocation");
+  const latEl = document.getElementById("resellerLatitude");
+  const lngEl = document.getElementById("resellerLongitude");
+
+  if (nameEl) nameEl.value = reseller.name || "";
+  if (logoEl) logoEl.value = reseller.logo_url || "";
+  if (descEl) descEl.value = reseller.description || "";
+  if (websiteEl) websiteEl.value = reseller.website_url || "";
+  if (locationEl) locationEl.value = reseller.location_url || "";
+  if (latEl) latEl.value = reseller.latitude || "";
+  if (lngEl) lngEl.value = reseller.longitude || "";
+
+  showView("form");
+}
+
+// API Functions
+async function loadResellers() {
+  showLoading();
+  try {
+    const response = await fetch("/api/resellers");
+    if (!response.ok) throw new Error("Failed to load resellers");
+
+    resellers = await response.json();
+    renderResellersList();
+    updateMap();
+  } catch (error) {
+    showError("Failed to load resellers: " + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function saveReseller(resellerData) {
+  const url = editingResellerId
+    ? `/api/resellers/${editingResellerId}`
+    : "/api/resellers";
+  const method = editingResellerId ? "PUT" : "POST";
+
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(resellerData),
+    });
+
+    if (!response.ok) throw new Error("Failed to save reseller");
+
+    await response.json();
+    showSuccess(
+      editingResellerId
+        ? "Reseller updated successfully"
+        : "Reseller created successfully"
+    );
+
+    // Reload resellers and return to list view
+    await loadResellers();
+    showView("resellers");
+
+    return true;
+  } catch (error) {
+    showError("Failed to save reseller: " + error.message);
+    throw error;
+  }
+}
+
+async function deleteReseller(resellerId) {
+  try {
+    const response = await fetch(`/api/resellers/${resellerId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) throw new Error("Failed to delete reseller");
+
+    showSuccess("Reseller deleted successfully");
+    await loadResellers();
+  } catch (error) {
+    showError("Failed to delete reseller: " + error.message);
+  }
+}
+
+async function searchResellers(query) {
+  if (!query.trim()) {
+    await loadResellers();
+    return;
+  }
+
+  showLoading();
+  try {
+    const response = await fetch(
+      `/api/resellers/search/${encodeURIComponent(query)}`
+    );
+    if (!response.ok) throw new Error("Failed to search resellers");
+
+    resellers = await response.json();
+    renderResellersList();
+    updateMap();
+  } catch (error) {
+    showError("Failed to search resellers: " + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function importResellers(csvFile) {
+  const formData = new FormData();
+  formData.append("csv", csvFile);
+
+  showLoading();
+  try {
+    const response = await fetch("/api/resellers/import", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("Failed to import resellers");
+
+    const result = await response.json();
+    showImportResults(result);
+
+    // Reload resellers if import was successful
+    if (result.imported > 0) {
+      await loadResellers();
     }
+  } catch (error) {
+    showError("Failed to import resellers: " + error.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+// Event Handlers
+function handleFormSubmit(e) {
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const resellerData = {
+    name: formData.get("name"),
+    logo_url: formData.get("logo_url"),
+    description: formData.get("description"),
+    website_url: formData.get("website_url"),
+    location_url: formData.get("location_url"),
+    latitude: parseFloat(formData.get("latitude")) || null,
+    longitude: parseFloat(formData.get("longitude")) || null,
   };
 
-  const handleSave = async (resellerData) => {
-    try {
-      const url = editingReseller?.id
-        ? `/api/resellers/${editingReseller.id}`
-        : "/api/resellers";
-      const method = editingReseller?.id ? "PUT" : "POST";
+  saveReseller(resellerData);
+}
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resellerData),
-      });
+function handleImportSubmit(e) {
+  e.preventDefault();
 
-      if (!response.ok) throw new Error("Failed to save reseller");
+  const csvFile = document.getElementById("csvFile").files[0];
+  if (!csvFile) {
+    showError("Please select a CSV file");
+    return;
+  }
 
-      setToast({
-        content: editingReseller?.id
-          ? "Reseller updated successfully"
-          : "Reseller created successfully",
-      });
-      setShowModal(false);
-      setEditingReseller(null);
-      reload();
-    } catch (error) {
-      setToast({ content: "Failed to save reseller", error: true });
-    }
-  };
+  importResellers(csvFile);
+}
 
-  const rows = resellers.map((r) => [
-    r.logo_url
-      ? `<img src="${r.logo_url}" alt="logo" style="height:28px; width:28px; object-fit:cover; border-radius:4px"/>`
-      : "No Logo",
-    r.name || "",
-    r.description || "-",
-    r.website_url
-      ? `<a href="${r.website_url}" target="_blank" style="color:#5c6ac4; text-decoration:none;">Visit Website</a>`
-      : "-",
-    r.location_url
-      ? `<a href="${r.location_url}" target="_blank" style="color:#5c6ac4; text-decoration:none;">View Location</a>`
-      : "-",
-    `<button onclick="window.editReseller(${r.id})" style="background:#5c6ac4; color:white; border:none; padding:4px 8px; border-radius:4px; margin-right:4px; cursor:pointer;">Edit</button>
-     <button onclick="window.deleteReseller(${r.id})" style="background:#d82c0d; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Delete</button>`,
-  ]);
+function handleSearch() {
+  const query = (searchInput && searchInput.value.trim()) || "";
+  searchResellers(query);
+}
 
-  // Make functions globally available for onclick handlers
-  useEffect(() => {
-    window.editReseller = (id) => {
-      const reseller = resellers.find((r) => r.id === id);
-      if (reseller) handleEdit(reseller);
-    };
-    window.deleteReseller = (id) => {
-      const reseller = resellers.find((r) => r.id === id);
-      if (reseller) handleDelete(reseller);
-    };
-  }, [resellers]);
+// Rendering Functions
+function renderResellersList() {
+  if (!resellersList) return;
 
-  const toastMarkup = toast ? (
-    <Toast
-      content={toast.content}
-      error={toast.error}
-      onDismiss={() => setToast(null)}
-    />
-  ) : null;
+  if (resellers.length === 0) {
+    resellersList.innerHTML =
+      '<div class="text-center text-muted">No resellers found</div>';
+    return;
+  }
 
-  return (
-    <Frame>
-      <Card>
-        {error ? (
-          <Banner tone="critical" title="Failed to load data">
-            <p>{error}</p>
-          </Banner>
-        ) : null}
-        <InlineStack
-          align="space-between"
-          blockAlign="center"
-          gap="400"
-          padding="400"
-        >
-          <Button onClick={reload} loading={loading} variant="primary">
-            Refresh
-          </Button>
-          <Button onClick={() => handleEdit(null)} variant="primary">
-            Add Reseller
-          </Button>
-        </InlineStack>
-        <div style={{ overflowX: "auto" }}>
-          <DataTable
-            columnContentTypes={[
-              "text",
-              "text",
-              "text",
-              "text",
-              "text",
-              "text",
-            ]}
-            headings={[
-              "Logo",
-              "Name",
-              "Description",
-              "Website",
-              "Location",
-              "Actions",
-            ]}
-            rows={rows}
-          />
+  resellersList.innerHTML = resellers
+    .map(
+      (reseller) => `
+        <div class="reseller-item ${
+          selectedReseller?.id === reseller.id ? "selected" : ""
+        }" 
+             onclick="selectReseller(${reseller.id})">
+            <div class="reseller-header">
+                ${
+                  reseller.logo_url
+                    ? `<img src="${reseller.logo_url}" alt="${reseller.name}" class="reseller-logo" onerror="this.style.display='none'">`
+                    : '<div class="reseller-logo" style="background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 0.8rem;">No Logo</div>'
+                }
+                <div class="reseller-name">${reseller.name}</div>
+            </div>
+            ${
+              reseller.description
+                ? `<div class="reseller-description">${reseller.description}</div>`
+                : ""
+            }
+            <div class="reseller-actions">
+                ${
+                  reseller.website_url
+                    ? `<a href="${reseller.website_url}" target="_blank" class="btn btn-primary btn-sm">Website</a>`
+                    : ""
+                }
+                ${
+                  reseller.location_url
+                    ? `<a href="${reseller.location_url}" target="_blank" class="btn btn-secondary btn-sm">Location</a>`
+                    : ""
+                }
+                <button onclick="event.stopPropagation(); showEditResellerForm(${JSON.stringify(
+                  reseller
+                ).replace(
+                  /"/g,
+                  "&quot;"
+                )})" class="btn btn-secondary btn-sm">Edit</button>
+                <button onclick="event.stopPropagation(); confirmDeleteReseller(${
+                  reseller.id
+                }, '${
+        reseller.name
+      }')" class="btn btn-danger btn-sm">Delete</button>
+            </div>
         </div>
-      </Card>
+    `
+    )
+    .join("");
+}
 
-      {/* Add/Edit Modal */}
-      <Modal
-        open={showModal}
-        onClose={() => {
-          setShowModal(false);
-          setEditingReseller(null);
-        }}
-        title={editingReseller ? "Edit Reseller" : "Add Reseller"}
-        primaryAction={{
-          content: "Save",
-          onAction: () => {
-            // This will be handled by the form submission
-          },
-        }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: () => {
-              setShowModal(false);
-              setEditingReseller(null);
-            },
-          },
-        ]}
-      >
-        <Modal.Section>
-          <ResellerForm
-            reseller={editingReseller}
-            onSave={handleSave}
-            onCancel={() => {
-              setShowModal(false);
-              setEditingReseller(null);
-            }}
-          />
-        </Modal.Section>
-      </Modal>
+function selectReseller(resellerId) {
+  selectedReseller = resellers.find((r) => r.id === resellerId);
+  renderResellersList();
+  updateMap();
+}
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        open={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setDeleteReseller(null);
-        }}
-        title="Delete Reseller"
-        primaryAction={{
-          content: "Delete",
-          destructive: true,
-          onAction: confirmDelete,
-        }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: () => {
-              setShowDeleteModal(false);
-              setDeleteReseller(null);
-            },
-          },
-        ]}
-      >
-        <Modal.Section>
-          <TextContainer>
-            <p>
-              Are you sure you want to delete "{deleteReseller?.name}"? This
-              action cannot be undone.
-            </p>
-          </TextContainer>
-        </Modal.Section>
-      </Modal>
-
-      {toastMarkup}
-    </Frame>
+function confirmDeleteReseller(resellerId, resellerName) {
+  showModal(
+    "Delete Reseller",
+    `Are you sure you want to delete "${resellerName}"? This action cannot be undone.`,
+    () => deleteReseller(resellerId)
   );
 }
 
-function ResellerForm({ reseller, onSave, onCancel }) {
-  const [formData, setFormData] = useState({
-    name: reseller?.name || "",
-    logo_url: reseller?.logo_url || "",
-    description: reseller?.description || "",
-    website_url: reseller?.website_url || "",
-    location_url: reseller?.location_url || "",
+// Map Functions
+function initializeMap() {
+  if (typeof google === "undefined") {
+    return;
+  }
+
+  const mapElement = document.getElementById("map");
+  if (!mapElement) return;
+
+  map = new google.maps.Map(mapElement, {
+    zoom: 2,
+    center: { lat: 0, lng: 0 },
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+  });
+}
+
+function updateMap() {
+  if (!map) return;
+
+  // Clear existing markers
+  markers.forEach((marker) => marker.setMap(null));
+  markers = [];
+
+  if (resellers.length === 0) return;
+
+  const bounds = new google.maps.LatLngBounds();
+  let hasValidLocation = false;
+
+  resellers.forEach((reseller) => {
+    if (reseller.latitude && reseller.longitude) {
+      const position = { lat: reseller.latitude, lng: reseller.longitude };
+
+      const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: reseller.name,
+        icon: {
+          url:
+            reseller.logo_url ||
+            "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          scaledSize: new google.maps.Size(30, 30),
+        },
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+                    <div style="padding: 10px;">
+                        <h4>${reseller.name}</h4>
+                        ${
+                          reseller.description
+                            ? `<p>${reseller.description}</p>`
+                            : ""
+                        }
+                        ${
+                          reseller.website_url
+                            ? `<a href="${reseller.website_url}" target="_blank">Visit Website</a>`
+                            : ""
+                        }
+                    </div>
+                `,
+      });
+
+      marker.addListener("click", () => {
+        infoWindow.open(map, marker);
+        selectReseller(reseller.id);
+      });
+
+      markers.push(marker);
+      bounds.extend(position);
+      hasValidLocation = true;
+    }
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const handleChange = (field) => (value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <FormLayout>
-        <TextField
-          label="Reseller Name"
-          value={formData.name}
-          onChange={handleChange("name")}
-          required
-        />
-        <TextField
-          label="Logo URL"
-          value={formData.logo_url}
-          onChange={handleChange("logo_url")}
-          helpText="Enter the URL of the reseller's logo image"
-        />
-        <TextField
-          label="Description"
-          value={formData.description}
-          onChange={handleChange("description")}
-          multiline={3}
-        />
-        <TextField
-          label="Website URL"
-          value={formData.website_url}
-          onChange={handleChange("website_url")}
-          type="url"
-        />
-        <TextField
-          label="Location URL"
-          value={formData.location_url}
-          onChange={handleChange("location_url")}
-          type="url"
-          helpText="URL to the reseller's location or contact information"
-        />
-      </FormLayout>
-    </form>
-  );
+  if (hasValidLocation) {
+    map.fitBounds(bounds);
+  }
 }
 
-function AdminApp() {
-  const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState(null);
+// Import Results
+function showImportResults(result) {
+  const resultsDiv = document.getElementById("importResults");
+  if (!resultsDiv) return;
+  const isError = result.errors > 0;
 
-  const onSearch = async () => {
-    if (!query.trim()) {
-      setSearchResults(null);
-      return;
-    }
+  resultsDiv.className = `import-results ${isError ? "error" : ""}`;
+  resultsDiv.style.display = "block";
 
-    try {
-      const response = await fetch(
-        `/api/resellers/search/${encodeURIComponent(query)}`
-      );
-      if (response.ok) {
-        const results = await response.json();
-        setSearchResults(results);
-      }
-    } catch (error) {
-      console.error("Search failed:", error);
-    }
-  };
-
-  const clearSearch = () => {
-    setQuery("");
-    setSearchResults(null);
-  };
-
-  return (
-    <AppProvider i18n={{}}>
-      <Page title="Reseller Management">
-        <Card sectioned>
-          <InlineStack gap="400">
-            <TextField
-              label="Search"
-              labelHidden
-              value={query}
-              onChange={setQuery}
-              autoComplete="off"
-              placeholder="Search resellers by name or description..."
-            />
-            <Button onClick={onSearch}>Search</Button>
-            {searchResults && <Button onClick={clearSearch}>Clear</Button>}
-          </InlineStack>
-        </Card>
-
-        {searchResults ? (
-          <Card>
-            <InlineStack
-              align="space-between"
-              blockAlign="center"
-              gap="400"
-              padding="400"
-            >
-              <p>
-                Search results for "{query}" ({searchResults.length} found)
-              </p>
-              <Button onClick={clearSearch}>Show All</Button>
-            </InlineStack>
-            <div style={{ overflowX: "auto" }}>
-              <DataTable
-                columnContentTypes={[
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                ]}
-                headings={[
-                  "Logo",
-                  "Name",
-                  "Description",
-                  "Website",
-                  "Location",
-                  "Actions",
-                ]}
-                rows={searchResults.map((r) => [
-                  r.logo_url
-                    ? `<img src="${r.logo_url}" alt="logo" style="height:28px; width:28px; object-fit:cover; border-radius:4px"/>`
-                    : "No Logo",
-                  r.name || "",
-                  r.description || "-",
-                  r.website_url
-                    ? `<a href="${r.website_url}" target="_blank" style="color:#5c6ac4; text-decoration:none;">Visit Website</a>`
-                    : "-",
-                  r.location_url
-                    ? `<a href="${r.location_url}" target="_blank" style="color:#5c6ac4; text-decoration:none;">View Location</a>`
-                    : "-",
-                  `<button onclick="window.editReseller(${r.id})" style="background:#5c6ac4; color:white; border:none; padding:4px 8px; border-radius:4px; margin-right:4px; cursor:pointer;">Edit</button>
-                   <button onclick="window.deleteReseller(${r.id})" style="background:#d82c0d; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Delete</button>`,
-                ])}
-              />
-            </div>
-          </Card>
-        ) : (
-          <ResellerTable />
-        )}
-      </Page>
-    </AppProvider>
-  );
+  resultsDiv.innerHTML = `
+        <h4>Import Results</h4>
+        <p><strong>Imported:</strong> ${result.imported} resellers</p>
+        <p><strong>Errors:</strong> ${result.errors}</p>
+        ${
+          result.errors > 0
+            ? `
+            <details>
+                <summary>View Errors</summary>
+                <ul>
+                    ${result.errors
+                      .map((error) => `<li>${error.error}</li>`)
+                      .join("")}
+                </ul>
+            </details>
+        `
+            : ""
+        }
+    `;
 }
 
-// Replace existing body content and mount React
-const container =
-  document.getElementById("root") ||
-  (() => {
-    document.body.innerHTML = "<div id='root'></div>";
-    return document.getElementById("root");
-  })();
+// Modal Functions
+function showModal(title, message, onConfirm) {
+  const modalTitle = document.getElementById("modalTitle");
+  const modalMessage = document.getElementById("modalMessage");
+  if (modalTitle) modalTitle.textContent = title;
+  if (modalMessage) modalMessage.textContent = message;
+  if (modal) modal.style.display = "flex";
 
-createRoot(container).render(<AdminApp />);
+  // Store the confirm action
+  if (modal) modal.dataset.confirmAction = onConfirm.toString();
+}
+
+function hideModal() {
+  if (modal) modal.style.display = "none";
+}
+
+function confirmModalAction() {
+  if (!modal) return;
+  const action = modal.dataset.confirmAction;
+  if (action) {
+    // eslint-disable-next-line no-eval
+    eval("(" + action + ")()");
+  }
+  hideModal();
+}
+
+// Utility Functions
+function showLoading() {
+  if (loadingOverlay) loadingOverlay.style.display = "flex";
+}
+
+function hideLoading() {
+  if (loadingOverlay) loadingOverlay.style.display = "none";
+}
+
+function showSuccess(message) {
+  alert("Success: " + message);
+}
+
+function showError(message) {
+  alert("Error: " + message);
+}
+
+// Make functions globally available for onclick handlers
+window.selectReseller = selectReseller;
+window.showEditResellerForm = showEditResellerForm;
+window.confirmDeleteReseller = confirmDeleteReseller;
