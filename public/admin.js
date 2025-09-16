@@ -388,7 +388,9 @@ function renderResellersTable() {
                 }
             </td>
             <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
-                <div class="Polaris-TextStyle--variationStrong">${reseller.name}</div>
+                <div class="Polaris-TextStyle--variationStrong">${
+                  reseller.name
+                }</div>
             </td>
             <td class="Polaris-DataTable__Cell Polaris-DataTable__Cell--verticalAlign-middle">
                 <div class="Polaris-TextStyle--variationSubdued">${
@@ -420,7 +422,9 @@ function renderResellersTable() {
                         )})" class="Polaris-Button Polaris-Button--secondary Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Edit</span></span></button>
                     </div>
                     <div class="Polaris-Stack__Item">
-                        <button onclick="confirmDeleteReseller(${reseller.id}, '${
+                        <button onclick="confirmDeleteReseller(${
+                          reseller.id
+                        }, '${
         reseller.name
       }')" class="Polaris-Button Polaris-Button--destructive Polaris-Button--sizeSlim"><span class="Polaris-Button__Content"><span class="Polaris-Button__Text">Delete</span></span></button>
                     </div>
@@ -459,23 +463,39 @@ function showImportResults(result) {
   const resultsDiv = document.getElementById("importResults");
   if (!resultsDiv) return;
 
-  const isError = result.errors > 0;
+  const errorArray = Array.isArray(result.errors)
+    ? result.errors
+    : Array.isArray(result.results?.errors)
+    ? result.results.errors
+    : [];
+  const errorCount =
+    typeof result.errorCount === "number"
+      ? result.errorCount
+      : Array.isArray(result.errors)
+      ? result.errors.length
+      : 0;
 
-  resultsDiv.className = `import-results ${isError ? "error" : ""}`;
+  const hasErrors = errorCount > 0 || errorArray.length > 0;
+
+  resultsDiv.className = `import-results ${hasErrors ? "error" : ""}`;
   resultsDiv.style.display = "block";
 
   resultsDiv.innerHTML = `
         <h4>Import Results</h4>
-        <p><strong>Imported:</strong> ${result.imported} resellers</p>
-        <p><strong>Errors:</strong> ${result.errors}</p>
+        <p><strong>Imported:</strong> ${
+          Number(result.imported) || 0
+        } resellers</p>
+        <p><strong>Errors:</strong> ${errorCount || errorArray.length}</p>
         ${
-          result.errors > 0
+          (errorCount || errorArray.length) > 0
             ? `
             <details>
                 <summary>View Errors</summary>
                 <ul>
-                    ${result.errors
-                      .map((error) => `<li>${error.error}</li>`)
+                    ${(errorArray || [])
+                      .map(
+                        (e) => `<li>${(e && e.error) || "Unknown error"}</li>`
+                      )
                       .join("")}
                 </ul>
             </details>
