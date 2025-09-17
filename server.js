@@ -1,7 +1,7 @@
 const express = require("express");
 const { shopifyApp } = require("@shopify/shopify-app-express");
 const { ApiVersion } = require("@shopify/shopify-api");
-const sqlite3 = require("sqlite3").verbose();
+const Database = require("better-sqlite3");
 const path = require("path");
 const cors = require("cors");
 const multer = require("multer");
@@ -17,31 +17,29 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Initialize database
-const db = new sqlite3.Database("./database.sqlite");
+const db = new Database("./database.sqlite");
 
 // Create resellers table
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS resellers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    logo_url TEXT,
-    description TEXT,
-    website_url TEXT,
-    location_url TEXT,
-    latitude REAL,
-    longitude REAL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
+db.exec(`CREATE TABLE IF NOT EXISTS resellers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  logo_url TEXT,
+  description TEXT,
+  website_url TEXT,
+  location_url TEXT,
+  latitude REAL,
+  longitude REAL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
 
-  db.run(`CREATE TABLE IF NOT EXISTS product_resellers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id TEXT NOT NULL,
-    reseller_id INTEGER NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (reseller_id) REFERENCES resellers (id)
-  )`);
-});
+db.exec(`CREATE TABLE IF NOT EXISTS product_resellers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id TEXT NOT NULL,
+  reseller_id INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (reseller_id) REFERENCES resellers (id)
+)`);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -94,29 +92,27 @@ app.use(
 
 // Get all resellers
 app.get("/api/resellers", (req, res) => {
-  db.all("SELECT * FROM resellers ORDER BY name", (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const rows = db.prepare("SELECT * FROM resellers ORDER BY name").all();
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Get reseller by ID
 app.get("/api/resellers/:id", (req, res) => {
   const id = req.params.id;
-  db.get("SELECT * FROM resellers WHERE id = ?", [id], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const row = db.prepare("SELECT * FROM resellers WHERE id = ?").get(id);
     if (!row) {
       res.status(404).json({ error: "Reseller not found" });
       return;
     }
     res.json(row);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Create new reseller
@@ -131,25 +127,13 @@ app.post("/api/resellers", (req, res) => {
     longitude,
   } = req.body;
 
-  db.run(
-    "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [
-      name,
-      logo_url,
-      description,
-      website_url,
-      location_url,
-      latitude,
-      longitude,
-    ],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json({ id: this.lastID, message: "Reseller created successfully" });
-    }
-  );
+  try {
+    const stmt = db.prepare("INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude);
+    res.json({ id: result.lastInsertRowid, message: "Reseller created successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Update reseller
@@ -165,63 +149,46 @@ app.put("/api/resellers/:id", (req, res) => {
     longitude,
   } = req.body;
 
-  db.run(
-    "UPDATE resellers SET name = ?, logo_url = ?, description = ?, website_url = ?, location_url = ?, latitude = ?, longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-    [
-      name,
-      logo_url,
-      description,
-      website_url,
-      location_url,
-      latitude,
-      longitude,
-      id,
-    ],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      if (this.changes === 0) {
-        res.status(404).json({ error: "Reseller not found" });
-        return;
-      }
-      res.json({ message: "Reseller updated successfully" });
+  try {
+    const stmt = db.prepare("UPDATE resellers SET name = ?, logo_url = ?, description = ?, website_url = ?, location_url = ?, latitude = ?, longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
+    const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude, id);
+    if (result.changes === 0) {
+      res.status(404).json({ error: "Reseller not found" });
+      return;
     }
-  );
+    res.json({ message: "Reseller updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Delete reseller
 app.delete("/api/resellers/:id", (req, res) => {
   const id = req.params.id;
 
-  db.run("DELETE FROM resellers WHERE id = ?", [id], function (err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const stmt = db.prepare("DELETE FROM resellers WHERE id = ?");
+    const result = stmt.run(id);
+    if (result.changes === 0) {
       res.status(404).json({ error: "Reseller not found" });
       return;
     }
     res.json({ message: "Reseller deleted successfully" });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Search resellers
 app.get("/api/resellers/search/:query", (req, res) => {
   const query = `%${req.params.query}%`;
-  db.all(
-    "SELECT * FROM resellers WHERE name LIKE ? OR description LIKE ? ORDER BY name",
-    [query, query],
-    (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    }
-  );
+  try {
+    const stmt = db.prepare("SELECT * FROM resellers WHERE name LIKE ? OR description LIKE ? ORDER BY name");
+    const rows = stmt.all(query, query);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Bulk import resellers from CSV
@@ -252,25 +219,13 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
           return;
         }
 
-        db.run(
-          "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
-          [
-            name,
-            logo_url,
-            description,
-            website_url,
-            location_url,
-            latitude,
-            longitude,
-          ],
-          function (err) {
-            if (err) {
-              errors.push({ row, error: err.message });
-            } else {
-              results.push({ id: this.lastID, name });
-            }
-          }
-        );
+        try {
+          const stmt = db.prepare("INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
+          const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude);
+          results.push({ id: result.lastInsertRowid, name });
+        } catch (err) {
+          errors.push({ row, error: err.message });
+        }
       } catch (error) {
         errors.push({ row, error: error.message });
       }
@@ -292,19 +247,15 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
 // Product-Reseller associations
 app.get("/api/products/:productId/resellers", (req, res) => {
   const productId = req.params.productId;
-  db.all(
-    `SELECT r.* FROM resellers r 
+  try {
+    const stmt = db.prepare(`SELECT r.* FROM resellers r 
      JOIN product_resellers pr ON r.id = pr.reseller_id 
-     WHERE pr.product_id = ?`,
-    [productId],
-    (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    }
-  );
+     WHERE pr.product_id = ?`);
+    const rows = stmt.all(productId);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/products/:productId/resellers", (req, res) => {
@@ -316,29 +267,23 @@ app.post("/api/products/:productId/resellers", (req, res) => {
   }
 
   // First, remove existing associations
-  db.run(
-    "DELETE FROM product_resellers WHERE product_id = ?",
-    [productId],
-    (err) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
+  try {
+    // First delete existing associations
+    const deleteStmt = db.prepare("DELETE FROM product_resellers WHERE product_id = ?");
+    deleteStmt.run(productId);
 
-      // Then add new associations
-      const stmt = db.prepare(
-        "INSERT INTO product_resellers (product_id, reseller_id) VALUES (?, ?)"
-      );
-      resellerIds.forEach((resellerId) => {
-        stmt.run([productId, resellerId]);
-      });
-      stmt.finalize();
+    // Then add new associations
+    const insertStmt = db.prepare("INSERT INTO product_resellers (product_id, reseller_id) VALUES (?, ?)");
+    resellerIds.forEach((resellerId) => {
+      insertStmt.run(productId, resellerId);
+    });
 
-      res.json({
-        message: "Product-reseller associations updated successfully",
-      });
-    }
-  );
+    res.json({
+      message: "Product-reseller associations updated successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Admin interface routes (placed BEFORE catch-all)
