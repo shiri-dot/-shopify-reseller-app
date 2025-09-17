@@ -128,9 +128,22 @@ app.post("/api/resellers", (req, res) => {
   } = req.body;
 
   try {
-    const stmt = db.prepare("INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude);
-    res.json({ id: result.lastInsertRowid, message: "Reseller created successfully" });
+    const stmt = db.prepare(
+      "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    const result = stmt.run(
+      name,
+      logo_url,
+      description,
+      website_url,
+      location_url,
+      latitude,
+      longitude
+    );
+    res.json({
+      id: result.lastInsertRowid,
+      message: "Reseller created successfully",
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -150,8 +163,19 @@ app.put("/api/resellers/:id", (req, res) => {
   } = req.body;
 
   try {
-    const stmt = db.prepare("UPDATE resellers SET name = ?, logo_url = ?, description = ?, website_url = ?, location_url = ?, latitude = ?, longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?");
-    const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude, id);
+    const stmt = db.prepare(
+      "UPDATE resellers SET name = ?, logo_url = ?, description = ?, website_url = ?, location_url = ?, latitude = ?, longitude = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+    );
+    const result = stmt.run(
+      name,
+      logo_url,
+      description,
+      website_url,
+      location_url,
+      latitude,
+      longitude,
+      id
+    );
     if (result.changes === 0) {
       res.status(404).json({ error: "Reseller not found" });
       return;
@@ -183,7 +207,9 @@ app.delete("/api/resellers/:id", (req, res) => {
 app.get("/api/resellers/search/:query", (req, res) => {
   const query = `%${req.params.query}%`;
   try {
-    const stmt = db.prepare("SELECT * FROM resellers WHERE name LIKE ? OR description LIKE ? ORDER BY name");
+    const stmt = db.prepare(
+      "SELECT * FROM resellers WHERE name LIKE ? OR description LIKE ? ORDER BY name"
+    );
     const rows = stmt.all(query, query);
     res.json(rows);
   } catch (err) {
@@ -220,8 +246,18 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
         }
 
         try {
-          const stmt = db.prepare("INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)");
-          const result = stmt.run(name, logo_url, description, website_url, location_url, latitude, longitude);
+          const stmt = db.prepare(
+            "INSERT INTO resellers (name, logo_url, description, website_url, location_url, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)"
+          );
+          const result = stmt.run(
+            name,
+            logo_url,
+            description,
+            website_url,
+            location_url,
+            latitude,
+            longitude
+          );
           results.push({ id: result.lastInsertRowid, name });
         } catch (err) {
           errors.push({ row, error: err.message });
@@ -269,11 +305,15 @@ app.post("/api/products/:productId/resellers", (req, res) => {
   // First, remove existing associations
   try {
     // First delete existing associations
-    const deleteStmt = db.prepare("DELETE FROM product_resellers WHERE product_id = ?");
+    const deleteStmt = db.prepare(
+      "DELETE FROM product_resellers WHERE product_id = ?"
+    );
     deleteStmt.run(productId);
 
     // Then add new associations
-    const insertStmt = db.prepare("INSERT INTO product_resellers (product_id, reseller_id) VALUES (?, ?)");
+    const insertStmt = db.prepare(
+      "INSERT INTO product_resellers (product_id, reseller_id) VALUES (?, ?)"
+    );
     resellerIds.forEach((resellerId) => {
       insertStmt.run(productId, resellerId);
     });
