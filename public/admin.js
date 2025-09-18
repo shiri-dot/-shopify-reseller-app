@@ -6,32 +6,59 @@ let totalItems = 0;
 let searchQuery = "";
 let editingResellerId = null;
 
-// DOM elements
-const resellersTableBody = document.getElementById("resellersTableBody");
-const searchInput = document.getElementById("searchInput");
-const searchBtn = document.getElementById("searchBtn");
-const clearSearchBtn = document.getElementById("clearSearchBtn");
-const addResellerBtn = document.getElementById("addResellerBtn");
-const importBtn = document.getElementById("importBtn");
-const resellerModal = document.getElementById("resellerModal");
-const importModal = document.getElementById("importModal");
-const confirmModal = document.getElementById("confirmModal");
-const loadingOverlay = document.getElementById("loadingOverlay");
-const resellerForm = document.getElementById("resellerForm");
-const importForm = document.getElementById("importForm");
+// DOM elements - will be initialized after DOM is loaded
+let resellersTableBody;
+let searchInput;
+let searchBtn;
+let clearSearchBtn;
+let addResellerBtn;
+let importBtn;
+let resellerModal;
+let importModal;
+let confirmModal;
+let loadingOverlay;
+let resellerForm;
+let importForm;
 
 // Pagination elements
-const prevPageBtn = document.getElementById("prevPageBtn");
-const nextPageBtn = document.getElementById("nextPageBtn");
-const pageInfo = document.getElementById("pageInfo");
-const paginationInfo = document.getElementById("paginationInfo");
+let prevPageBtn;
+let nextPageBtn;
+let pageInfo;
+let paginationInfo;
 
 // Initialize the admin app
 document.addEventListener("DOMContentLoaded", function () {
+  initializeDOMElements();
   initializeAdminApp();
   setupEventListeners();
   loadResellers();
 });
+
+function initializeDOMElements() {
+  console.log("Initializing DOM elements...");
+
+  // Initialize DOM elements
+  resellersTableBody = document.getElementById("resellersTableBody");
+  searchInput = document.getElementById("searchInput");
+  searchBtn = document.getElementById("searchBtn");
+  clearSearchBtn = document.getElementById("clearSearchBtn");
+  addResellerBtn = document.getElementById("addResellerBtn");
+  importBtn = document.getElementById("importBtn");
+  resellerModal = document.getElementById("resellerModal");
+  importModal = document.getElementById("importModal");
+  confirmModal = document.getElementById("confirmModal");
+  loadingOverlay = document.getElementById("loadingOverlay");
+  resellerForm = document.getElementById("resellerForm");
+  importForm = document.getElementById("importForm");
+
+  // Pagination elements
+  prevPageBtn = document.getElementById("prevPageBtn");
+  nextPageBtn = document.getElementById("nextPageBtn");
+  pageInfo = document.getElementById("pageInfo");
+  paginationInfo = document.getElementById("paginationInfo");
+
+  console.log("DOM elements initialized. addResellerBtn:", addResellerBtn);
+}
 
 function initializeAdminApp() {
   // Initialize Shopify App Bridge if available
@@ -54,8 +81,22 @@ function setupEventListeners() {
   }
 
   // Modal buttons
-  if (addResellerBtn)
-    addResellerBtn.addEventListener("click", showAddResellerModal);
+  console.log("Setting up modal button event listeners...");
+  console.log("addResellerBtn element:", addResellerBtn);
+
+  if (addResellerBtn) {
+    console.log("Add Reseller button found, adding event listener");
+    addResellerBtn.addEventListener("click", function (e) {
+      console.log("Add Reseller button clicked!");
+      e.preventDefault();
+      showAddResellerModal();
+    });
+    addResellerBtn.setAttribute("data-listener-added", "true");
+  } else {
+    console.error(
+      "Add Reseller button not found! Check if element with id 'addResellerBtn' exists in HTML"
+    );
+  }
   if (importBtn) importBtn.addEventListener("click", showImportModal);
 
   // Close modal buttons
@@ -261,13 +302,19 @@ function handleLogoPreview() {
 
 // Modal Functions
 function showAddResellerModal() {
+  console.log("showAddResellerModal called");
   editingResellerId = null;
   const modalTitle = document.getElementById("modalTitle");
   if (modalTitle) modalTitle.textContent = "Add Reseller";
   if (resellerForm) resellerForm.reset();
   const logoPreview = document.getElementById("logoPreview");
   if (logoPreview) logoPreview.style.display = "none";
-  if (resellerModal) resellerModal.style.display = "flex";
+  if (resellerModal) {
+    console.log("Showing reseller modal");
+    resellerModal.style.display = "flex";
+  } else {
+    console.error("Reseller modal not found!");
+  }
 }
 
 function showEditResellerModal(reseller) {
@@ -542,7 +589,21 @@ function isValidUrl(string) {
   }
 }
 
-// Make functions globally available for onclick handlers
+// Make functions globally available for onclick handlers (fallback)
 window.showAddResellerModal = showAddResellerModal;
 window.showEditResellerModal = showEditResellerModal;
 window.confirmDeleteReseller = confirmDeleteReseller;
+
+// Additional fallback: Try to set up event listener again after a short delay
+setTimeout(() => {
+  const fallbackBtn = document.getElementById("addResellerBtn");
+  if (fallbackBtn && !fallbackBtn.hasAttribute("data-listener-added")) {
+    console.log("Setting up fallback event listener for Add Reseller button");
+    fallbackBtn.addEventListener("click", function (e) {
+      console.log("Fallback: Add Reseller button clicked!");
+      e.preventDefault();
+      showAddResellerModal();
+    });
+    fallbackBtn.setAttribute("data-listener-added", "true");
+  }
+}, 1000);

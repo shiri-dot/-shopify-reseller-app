@@ -335,7 +335,7 @@ app.get("/admin/*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
-// Serve the main app
+// Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
