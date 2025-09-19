@@ -356,6 +356,197 @@ app.post("/api/products/:productId/resellers", (req, res) => {
   }
 });
 
+// Create metafield definition
+app.post("/api/metafields/definition", async (req, res) => {
+  try {
+    const { namespace, key, name, description, type } = req.body;
+
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+
+    const client = new shopify.clients.Graphql({
+      session: session[0],
+    });
+
+    const response = await client.query({
+      data: {
+        query: `
+          mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+            metafieldDefinitionCreate(definition: $definition) {
+              createdDefinition {
+                id
+                name
+                namespace
+                key
+                description
+                type {
+                  name
+                }
+              }
+              userErrors {
+                field
+                message
+              }
+            }
+          }
+        `,
+        variables: {
+          definition: {
+            namespace: namespace,
+            key: key,
+            name: name || "Selected Resellers",
+            description: description || "Resellers assigned to this product",
+            type: type || "json",
+            ownerType: "PRODUCT",
+          },
+        },
+      },
+    });
+
+    if (response.body.data.metafieldDefinitionCreate.userErrors.length > 0) {
+      return res.status(400).json({
+        error: "Metafield definition creation failed",
+        details: response.body.data.metafieldDefinitionCreate.userErrors,
+      });
+    }
+
+    res.json({
+      success: true,
+      definition:
+        response.body.data.metafieldDefinitionCreate.createdDefinition,
+    });
+  } catch (error) {
+    console.error("Error creating metafield definition:", error);
+    res.status(500).json({ error: "Failed to create metafield definition" });
+  }
+});
+
+// Get product metafields
+app.get("/api/products/:id/metafields", async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+
+    const client = new shopify.clients.Graphql({
+      session: session[0],
+    });
+
+    const response = await client.query({
+      data: {
+        query: `
+          query getProduct($id: ID!) {
+            product(id: $id) {
+              id
+              metafields(first: 100) {
+                edges {
+                  node {
+                    id
+                    namespace
+                    key
+                    value
+                    type
+                    description
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: {
+          id: `gid://shopify/Product/${productId}`,
+        },
+      },
+    });
+
+    const metafields = response.body.data.product.metafields.edges.map(
+      (edge) => edge.node
+    );
+    res.json(metafields);
+  } catch (error) {
+    console.error("Error fetching product metafields:", error);
+    res.status(500).json({ error: "Failed to fetch product metafields" });
+  }
+});
+
+// Update product metafield
+app.post("/api/products/:id/metafields", async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const { namespace, key, value, type } = req.body;
+
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+
+    const client = new shopify.clients.Graphql({
+      session: session[0],
+    });
+
+    const response = await client.query({
+      data: {
+        query: `
+          mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+            metafieldsSet(metafields: $metafields) {
+              metafields {
+                id
+                namespace
+                key
+                value
+              }
+              userErrors {
+                field
+                message
+              }
+            }
+          }
+        `,
+        variables: {
+          metafields: [
+            {
+              ownerId: `gid://shopify/Product/${productId}`,
+              namespace: namespace,
+              key: key,
+              value: typeof value === "object" ? JSON.stringify(value) : value,
+              type: type || "json",
+            },
+          ],
+        },
+      },
+    });
+
+    if (response.body.data.metafieldsSet.userErrors.length > 0) {
+      return res.status(400).json({
+        error: "Metafield update failed",
+        details: response.body.data.metafieldsSet.userErrors,
+      });
+    }
+
+    res.json({
+      success: true,
+      metafield: response.body.data.metafieldsSet.metafields[0],
+    });
+  } catch (error) {
+    console.error("Error updating product metafield:", error);
+    res.status(500).json({ error: "Failed to update product metafield" });
+  }
+});
+
 // Admin interface routes (placed BEFORE catch-all)
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
@@ -407,6 +598,11 @@ app.get("/debug-guide", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "debug-guide.html"));
 });
 
+// Metafield reseller admin
+app.get("/metafield-reseller-admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "metafield-reseller-admin.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -420,6 +616,4 @@ if (!fs.existsSync("uploads")) {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(
-    `Shopify app URL: ${process.env.SHOPIFY_APP_URL || "http://localhost:3000"}`
-  );
-});
+    `Shopify app URL: ${process.e
