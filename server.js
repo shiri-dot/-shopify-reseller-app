@@ -402,6 +402,11 @@ app.get("/fix-instructions", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "fix-instructions.html"));
 });
 
+// Debug guide
+app.get("/debug-guide", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "debug-guide.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .warning strong {
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .success strong {
+            color: #155724;
+        }
+        .debug-section {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .debug-section strong {
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Debug Guide</h1>
+            <p>Let's figure out why the reseller selection isn't showing up</p>
+        </div>
+        
+        <div class="content">
+            <div class="warning">
+                <strong>🔍 Debugging Steps:</strong>
+                <p>Follow these steps to identify why the reseller selection isn't appearing on your product pages.</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 1: Test Basic Script Loading</h3>
+                <p>First, let's test if any script can load on your Shopify admin pages.</p>
+                
+                <p><strong>Replace your current script in theme.liquid with this test script:</strong></p>
+                <div class="code-block">
+&lt;!-- Test Script --&gt;
+&lt;script&gt;
+  if (window.location.hostname.includes('myshopify.com') && 
+      window.location.pathname.includes('/admin/products/')) {
+    
+    const script = document.createElement('script');
+    script.src = 'https://shopify-reseller-app-production.up.railway.app/test-script.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    console.log('🧪 Loading test script...');
+  }
+&lt;/script&gt;
+                </div>
+                
+                <p><strong>Then:</strong></p>
+                <ol>
+                    <li>Save your theme.liquid file</li>
+                    <li>Go to any product editing page</li>
+                    <li>Look for a <strong>blue box</strong> in the top-right corner that says "🧪 TEST: Script is working!"</li>
+                    <li>Open browser console (F12) and look for "🧪 TEST SCRIPT LOADED"</li>
+                </ol>
+            </div>
+
+            <div class="step">
+                <h3>Step 2: Debug Detailed Information</h3>
+                <p>If the test script works, replace it with this debug script:</p>
+                
+                <div class="code-block">
+&lt;!-- Debug Script --&gt;
+&lt;script&gt;
+  if (window.location.hostname.includes('myshopify.com')) {
+    
+    const script = document.createElement('script');
+    script.src = 'https://shopify-reseller-app-production.up.railway.app/debug-reseller.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    console.log('🔍 Loading debug script...');
+  }
+&lt;/script&gt;
+                </div>
+                
+                <p><strong>This will:</strong></p>
+                <ul>
+                    <li>Show a debug panel in the top-left corner</li>
+                    <li>Display detailed information about the current page</li>
+                    <li>Try to create a test reseller section</li>
+                    <li>Log everything to the browser console</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>Step 3: Check Browser Console</h3>
+                <p>Open your browser's developer console (F12) and look for these messages:</p>
+                
+                <div class="code-block">
+🔍 DEBUG: Reseller script starting...
+🔍 DEBUG: Current URL: https://...
+🔍 DEBUG: Is product page: true/false
+🔍 DEBUG: Has edit: true/false
+🔍 DEBUG: Conditions met, loading reseller script...
+                </div>
+                
+                <p><strong>Tell me what you see in the console!</strong></p>
+            </div>
+
+            <div class="step">
+                <h3>Step 4: Manual Test</h3>
+                <p>If the scripts still don't work, try this manual test:</p>
+                
+                <ol>
+                    <li>Go to any product editing page in Shopify admin</li>
+                    <li>Open browser console (F12)</li>
+                    <li>Paste this code and press Enter:</li>
+                </ol>
+                
+                <div class="code-block">
+// Manual test
+const testDiv = document.createElement('div');
+testDiv.innerHTML = '🧪 MANUAL TEST - If you see this, JavaScript works!';
+testDiv.style.cssText = 'position:fixed;top:50px;right:20px;background:red;color:white;padding:20px;z-index:9999;';
+document.body.appendChild(testDiv);
+                </div>
+                
+                <p>If you see a red box, JavaScript is working. If not, there's a deeper issue.</p>
+            </div>
+
+            <div class="debug-section">
+                <strong>🔍 What to Look For:</strong>
+                <ul>
+                    <li><strong>Blue test box</strong> - Means basic script loading works</li>
+                    <li><strong>Debug panel</strong> - Shows page information and test elements</li>
+                    <li><strong>Console messages</strong> - Tells us exactly what's happening</li>
+                    <li><strong>Test reseller section</strong> - Green bordered section with test checkbox</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>Step 5: Report Back</h3>
+                <p>After trying the above steps, tell me:</p>
+                <ul>
+                    <li>Did you see the blue test box?</li>
+                    <li>Did you see the debug panel?</li>
+                    <li>What messages appeared in the console?</li>
+                    <li>Did the manual test work?</li>
+                </ul>
+                
+                <p><strong>This will help me identify exactly what's going wrong!</strong></p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/admin" class="btn">Back to Admin</a>
+                <a href="/fix-instructions" class="btn" style="margin-left: 10px;">View Fix Instructions</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
