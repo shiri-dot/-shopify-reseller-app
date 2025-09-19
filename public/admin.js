@@ -5,6 +5,7 @@ let itemsPerPage = 10;
 let totalItems = 0;
 let searchQuery = "";
 let editingResellerId = null;
+let pendingConfirmAction = null;
 
 // DOM elements - will be initialized after DOM is loaded
 let resellersTableBody;
@@ -119,12 +120,15 @@ function setupEventListeners() {
   const cancelBtn = document.getElementById("cancelBtn");
   const cancelImportBtn = document.getElementById("cancelImportBtn");
   const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+  const confirmActionBtn = document.getElementById("confirmActionBtn");
 
   if (cancelBtn) cancelBtn.addEventListener("click", hideResellerModal);
   if (cancelImportBtn)
     cancelImportBtn.addEventListener("click", hideImportModal);
   if (confirmCancelBtn)
     confirmCancelBtn.addEventListener("click", hideConfirmModal);
+  if (confirmActionBtn)
+    confirmActionBtn.addEventListener("click", confirmModalAction);
 
   // Pagination
   if (prevPageBtn)
@@ -371,8 +375,8 @@ function showConfirmModal(title, message, onConfirm) {
   if (confirmMessage) confirmMessage.textContent = message;
   if (confirmModal) {
     confirmModal.style.display = "flex";
-    // Store the confirm action
-    confirmModal.dataset.confirmAction = onConfirm.toString();
+    // Store the confirm action function in a global variable
+    pendingConfirmAction = onConfirm;
   }
 }
 
@@ -381,11 +385,11 @@ function hideConfirmModal() {
 }
 
 function confirmModalAction() {
-  const action = confirmModal.dataset.confirmAction;
-  if (action) {
-    eval("(" + action + ")()");
+  if (pendingConfirmAction && typeof pendingConfirmAction === 'function') {
+    pendingConfirmAction();
   }
   hideConfirmModal();
+  pendingConfirmAction = null;
 }
 
 // Rendering Functions
