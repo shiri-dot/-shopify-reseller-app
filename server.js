@@ -230,15 +230,16 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
     .pipe(csv())
     .on("data", (row) => {
       try {
-        const {
-          name,
-          logo_url,
-          description,
-          website_url,
-          location_url,
-          latitude,
-          longitude,
-        } = row;
+        const name = (row.name || "")
+          .toString()
+          .replace(/^\uFEFF/, "")
+          .trim();
+        const logo_url = row.logo_url || "";
+        const description = row.description || "";
+        const website_url = row.website_url || "";
+        const location_url = row.location_url || "";
+        const latitude = row.latitude || row.lat || null;
+        const longitude = row.longitude || row.lng || null;
 
         if (!name) {
           errors.push({ row, error: "Name is required" });
