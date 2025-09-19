@@ -1,719 +1,807 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Metafield Reseller Admin</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f6f6f7;
-            color: #2c3e50;
-            line-height: 1.6;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #f6f6f7;
+        color: #2c3e50;
+        line-height: 1.6;
+      }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
 
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
+      .header {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
 
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
+      .header h1 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
 
-        .header p {
-            color: #6c757d;
-            font-size: 16px;
-        }
+      .header p {
+        color: #6c757d;
+        font-size: 16px;
+      }
 
-        .section {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
+      .section {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
 
-        .section h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+      .section h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            margin: 5px;
-        }
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin: 5px;
+      }
 
-        .btn:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
-        }
+      .btn:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+      }
 
-        .btn-success {
-            background: #28a745;
-        }
+      .btn-success {
+        background: #28a745;
+      }
 
-        .btn-success:hover {
-            background: #218838;
-        }
+      .btn-success:hover {
+        background: #218838;
+      }
 
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
+      .btn-warning {
+        background: #ffc107;
+        color: #212529;
+      }
 
-        .btn-warning:hover {
-            background: #e0a800;
-        }
+      .btn-warning:hover {
+        background: #e0a800;
+      }
 
-        .btn-secondary {
-            background: #6c757d;
-        }
+      .btn-secondary {
+        background: #6c757d;
+      }
 
-        .btn-secondary:hover {
-            background: #545b62;
-        }
+      .btn-secondary:hover {
+        background: #545b62;
+      }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+      .form-group {
+        margin-bottom: 20px;
+      }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #2c3e50;
-        }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #2c3e50;
+      }
 
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e1e3e5;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-        }
+      .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e1e3e5;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.2s ease;
+      }
 
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-        }
+      .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      }
 
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
+      .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+      }
 
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border: 2px solid #e1e3e5;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e1e3e5;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
 
-        .checkbox-item:hover {
-            border-color: #007bff;
-            background: #f8f9fa;
-        }
+      .checkbox-item:hover {
+        border-color: #007bff;
+        background: #f8f9fa;
+      }
 
-        .checkbox-item input[type="checkbox"] {
-            margin-right: 12px;
-            transform: scale(1.2);
-        }
+      .checkbox-item input[type="checkbox"] {
+        margin-right: 12px;
+        transform: scale(1.2);
+      }
 
-        .checkbox-item.checked {
-            border-color: #007bff;
-            background: #e3f2fd;
-        }
+      .checkbox-item.checked {
+        border-color: #007bff;
+        background: #e3f2fd;
+      }
 
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
 
-        .product-card {
-            border: 2px solid #e1e3e5;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.2s ease;
-        }
+      .product-card {
+        border: 2px solid #e1e3e5;
+        border-radius: 8px;
+        padding: 20px;
+        transition: all 0.2s ease;
+      }
 
-        .product-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+      .product-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
 
-        .product-card h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
+      .product-card h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
 
-        .product-card p {
-            color: #6c757d;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
+      .product-card p {
+        color: #6c757d;
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
 
-        .selected-resellers {
-            background: #e3f2fd;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
+      .selected-resellers {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
 
-        .selected-resellers h4 {
-            color: #1976d2;
-            font-size: 14px;
-            margin-bottom: 8px;
-        }
+      .selected-resellers h4 {
+        color: #1976d2;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
 
-        .selected-resellers ul {
-            list-style: none;
-            padding: 0;
-        }
+      .selected-resellers ul {
+        list-style: none;
+        padding: 0;
+      }
 
-        .selected-resellers li {
-            background: white;
-            padding: 5px 10px;
-            margin: 3px 0;
-            border-radius: 4px;
-            font-size: 12px;
-        }
+      .selected-resellers li {
+        background: white;
+        padding: 5px 10px;
+        margin: 3px 0;
+        border-radius: 4px;
+        font-size: 12px;
+      }
 
-        .alert {
-            padding: 15px 20px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-left: 4px solid;
-        }
+      .alert {
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        border-left: 4px solid;
+      }
 
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border-left-color: #28a745;
-        }
+      .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-left-color: #28a745;
+      }
 
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border-left-color: #dc3545;
-        }
+      .alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border-left-color: #dc3545;
+      }
 
-        .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border-left-color: #17a2b8;
-        }
+      .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left-color: #17a2b8;
+      }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
 
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-        }
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+      }
 
-        .stat-card h3 {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
+      .stat-card h3 {
+        font-size: 32px;
+        margin-bottom: 5px;
+      }
 
-        .stat-card p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
+      .stat-card p {
+        opacity: 0.9;
+        font-size: 14px;
+      }
 
-        .search-bar {
-            position: relative;
-            margin-bottom: 20px;
-        }
+      .search-bar {
+        position: relative;
+        margin-bottom: 20px;
+      }
 
-        .search-bar input {
-            width: 100%;
-            padding: 12px 16px 12px 45px;
-            border: 2px solid #e1e3e5;
-            border-radius: 25px;
-            font-size: 14px;
-        }
+      .search-bar input {
+        width: 100%;
+        padding: 12px 16px 12px 45px;
+        border: 2px solid #e1e3e5;
+        border-radius: 25px;
+        font-size: 14px;
+      }
 
-        .search-bar::before {
-            content: "🔍";
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-        }
+      .search-bar::before {
+        content: "🔍";
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🏪 Metafield Reseller Management</h1>
-            <p>Manage reseller assignments using Shopify metafields - more reliable than script injection!</p>
+      <div class="header">
+        <h1>🏪 Metafield Reseller Management</h1>
+        <p>
+          Manage reseller assignments using Shopify metafields - more reliable
+          than script injection!
+        </p>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="total-products">-</h3>
+          <p>Total Products</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="total-resellers">-</h3>
+          <p>Total Resellers</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="assigned-products">-</h3>
+          <p>Products with Resellers</p>
+        </div>
+      </div>
+
+      <!-- Metafield Setup Section -->
+      <div class="section">
+        <h2>⚙️ Metafield Setup</h2>
+        <div class="alert alert-info">
+          <strong>Step 1:</strong> Create a metafield definition in Shopify to
+          store reseller data for products.
         </div>
 
-        <!-- Stats Section -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3 id="total-products">-</h3>
-                <p>Total Products</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="total-resellers">-</h3>
-                <p>Total Resellers</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="assigned-products">-</h3>
-                <p>Products with Resellers</p>
-            </div>
+        <div class="form-group">
+          <label for="metafield-namespace">Metafield Namespace:</label>
+          <input
+            type="text"
+            id="metafield-namespace"
+            class="form-control"
+            value="resellers"
+            placeholder="resellers"
+          />
         </div>
 
-        <!-- Metafield Setup Section -->
-        <div class="section">
-            <h2>⚙️ Metafield Setup</h2>
-            <div class="alert alert-info">
-                <strong>Step 1:</strong> Create a metafield definition in Shopify to store reseller data for products.
-            </div>
-            
-            <div class="form-group">
-                <label for="metafield-namespace">Metafield Namespace:</label>
-                <input type="text" id="metafield-namespace" class="form-control" value="resellers" placeholder="resellers">
-            </div>
-            
-            <div class="form-group">
-                <label for="metafield-key">Metafield Key:</label>
-                <input type="text" id="metafield-key" class="form-control" value="selected_resellers" placeholder="selected_resellers">
-            </div>
-            
-            <button class="btn btn-warning" onclick="createMetafieldDefinition()">
-                Create Metafield Definition
-            </button>
-            
-            <div id="metafield-status" class="alert" style="display: none;"></div>
+        <div class="form-group">
+          <label for="metafield-key">Metafield Key:</label>
+          <input
+            type="text"
+            id="metafield-key"
+            class="form-control"
+            value="selected_resellers"
+            placeholder="selected_resellers"
+          />
         </div>
 
-        <!-- Product Selection Section -->
-        <div class="section">
-            <h2>📦 Select Product</h2>
-            
-            <div class="search-bar">
-                <input type="text" id="product-search" placeholder="Search products..." onkeyup="filterProducts()">
-            </div>
-            
-            <div class="form-group">
-                <label for="product-select">Choose a product to assign resellers:</label>
-                <select id="product-select" class="form-control" onchange="loadProductResellers()">
-                    <option value="">Select a product...</option>
-                </select>
-            </div>
+        <button class="btn btn-warning" onclick="createMetafieldDefinition()">
+          Create Metafield Definition
+        </button>
+
+        <div id="metafield-status" class="alert" style="display: none"></div>
+      </div>
+
+      <!-- Product Selection Section -->
+      <div class="section">
+        <h2>📦 Select Product</h2>
+
+        <div class="search-bar">
+          <input
+            type="text"
+            id="product-search"
+            placeholder="Search products..."
+            onkeyup="filterProducts()"
+          />
         </div>
 
-        <!-- Reseller Selection Section -->
-        <div class="section" id="reseller-section" style="display: none;">
-            <h2>🏪 Select Resellers</h2>
-            <p>Choose which resellers carry the selected product:</p>
-            
-            <div class="checkbox-group" id="reseller-checkboxes">
-                <!-- Resellers will be loaded here -->
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <button class="btn btn-success" onclick="saveProductResellers()">
-                    Save Reseller Assignment
-                </button>
-                <button class="btn btn-secondary" onclick="clearSelection()">
-                    Clear Selection
-                </button>
-            </div>
-            
-            <div id="save-status" class="alert" style="display: none;"></div>
+        <div class="form-group">
+          <label for="product-select"
+            >Choose a product to assign resellers:</label
+          >
+          <select
+            id="product-select"
+            class="form-control"
+            onchange="loadProductResellers()"
+          >
+            <option value="">Select a product...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Reseller Selection Section -->
+      <div class="section" id="reseller-section" style="display: none">
+        <h2>🏪 Select Resellers</h2>
+        <p>Choose which resellers carry the selected product:</p>
+
+        <div class="checkbox-group" id="reseller-checkboxes">
+          <!-- Resellers will be loaded here -->
         </div>
 
-        <!-- Product Grid Section -->
-        <div class="section">
-            <h2>📋 All Products with Resellers</h2>
-            <p>View all products and their assigned resellers:</p>
-            
-            <div class="product-grid" id="products-grid">
-                <!-- Products will be loaded here -->
-            </div>
+        <div style="margin-top: 20px">
+          <button class="btn btn-success" onclick="saveProductResellers()">
+            Save Reseller Assignment
+          </button>
+          <button class="btn btn-secondary" onclick="clearSelection()">
+            Clear Selection
+          </button>
         </div>
 
-        <!-- Instructions Section -->
-        <div class="section">
-            <h2>📖 How to Use in Shopify Admin</h2>
-            <div class="alert alert-success">
-                <strong>✅ Metafield Approach Benefits:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    <li>No script injection needed</li>
-                    <li>Works reliably in Shopify admin</li>
-                    <li>Data stored in Shopify's database</li>
-                    <li>Can be accessed via Shopify API</li>
-                    <li>Shows up in product metafields section</li>
-                </ul>
-            </div>
-            
-            <h3>Step-by-Step Instructions:</h3>
-            <ol style="margin: 15px 0; padding-left: 20px;">
-                <li><strong>Create Metafield:</strong> Click "Create Metafield Definition" above</li>
-                <li><strong>Select Product:</strong> Choose a product from the dropdown</li>
-                <li><strong>Select Resellers:</strong> Check the resellers you want to assign</li>
-                <li><strong>Save:</strong> Click "Save Reseller Assignment"</li>
-                <li><strong>View in Shopify:</strong> Go to your product in Shopify admin → Metafields section</li>
-            </ol>
-            
-            <h3>Accessing in Shopify Admin:</h3>
-            <p>After creating the metafield, you'll be able to see and edit reseller assignments directly in your Shopify product editing page under the "Metafields" section.</p>
+        <div id="save-status" class="alert" style="display: none"></div>
+      </div>
+
+      <!-- Product Grid Section -->
+      <div class="section">
+        <h2>📋 All Products with Resellers</h2>
+        <p>View all products and their assigned resellers:</p>
+
+        <div class="product-grid" id="products-grid">
+          <!-- Products will be loaded here -->
         </div>
+      </div>
+
+      <!-- Instructions Section -->
+      <div class="section">
+        <h2>📖 How to Use in Shopify Admin</h2>
+        <div class="alert alert-success">
+          <strong>✅ Metafield Approach Benefits:</strong>
+          <ul style="margin: 10px 0 0 20px">
+            <li>No script injection needed</li>
+            <li>Works reliably in Shopify admin</li>
+            <li>Data stored in Shopify's database</li>
+            <li>Can be accessed via Shopify API</li>
+            <li>Shows up in product metafields section</li>
+          </ul>
+        </div>
+
+        <h3>Step-by-Step Instructions:</h3>
+        <ol style="margin: 15px 0; padding-left: 20px">
+          <li>
+            <strong>Create Metafield:</strong> Click "Create Metafield
+            Definition" above
+          </li>
+          <li>
+            <strong>Select Product:</strong> Choose a product from the dropdown
+          </li>
+          <li>
+            <strong>Select Resellers:</strong> Check the resellers you want to
+            assign
+          </li>
+          <li><strong>Save:</strong> Click "Save Reseller Assignment"</li>
+          <li>
+            <strong>View in Shopify:</strong> Go to your product in Shopify
+            admin → Metafields section
+          </li>
+        </ol>
+
+        <h3>Accessing in Shopify Admin:</h3>
+        <p>
+          After creating the metafield, you'll be able to see and edit reseller
+          assignments directly in your Shopify product editing page under the
+          "Metafields" section.
+        </p>
+      </div>
     </div>
 
     <script>
-        let allProducts = [];
-        let allResellers = [];
-        let selectedProduct = null;
-        let selectedResellers = [];
+      let allProducts = [];
+      let allResellers = [];
+      let selectedProduct = null;
+      let selectedResellers = [];
 
-        // Load initial data
-        document.addEventListener('DOMContentLoaded', function() {
-            loadStats();
-            loadProducts();
-            loadResellers();
+      // Load initial data
+      document.addEventListener("DOMContentLoaded", function () {
+        loadStats();
+        loadProducts();
+        loadResellers();
+      });
+
+      // Load statistics
+      async function loadStats() {
+        try {
+          const [productsResponse, resellersResponse] = await Promise.all([
+            fetch("/api/products"),
+            fetch("/api/resellers"),
+          ]);
+
+          const products = await productsResponse.json();
+          const resellers = await resellersResponse.json();
+
+          document.getElementById("total-products").textContent =
+            products.length;
+          document.getElementById("total-resellers").textContent =
+            resellers.length;
+
+          // Count products with resellers
+          let assignedCount = 0;
+          for (const product of products) {
+            const response = await fetch(
+              `/api/products/${product.id}/resellers`
+            );
+            if (response.ok) {
+              const productResellers = await response.json();
+              if (productResellers.length > 0) assignedCount++;
+            }
+          }
+          document.getElementById("assigned-products").textContent =
+            assignedCount;
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+
+      // Load products
+      async function loadProducts() {
+        try {
+          const response = await fetch("/api/products");
+          if (!response.ok) throw new Error("Failed to load products");
+
+          allProducts = await response.json();
+          populateProductSelect();
+          renderProductsGrid();
+        } catch (error) {
+          console.error("Error loading products:", error);
+          showAlert("Error loading products: " + error.message, "error");
+        }
+      }
+
+      // Load resellers
+      async function loadResellers() {
+        try {
+          const response = await fetch("/api/resellers");
+          if (!response.ok) throw new Error("Failed to load resellers");
+
+          allResellers = await response.json();
+        } catch (error) {
+          console.error("Error loading resellers:", error);
+          showAlert("Error loading resellers: " + error.message, "error");
+        }
+      }
+
+      // Populate product select dropdown
+      function populateProductSelect() {
+        const select = document.getElementById("product-select");
+        select.innerHTML = '<option value="">Select a product...</option>';
+
+        allProducts.forEach((product) => {
+          const option = document.createElement("option");
+          option.value = product.id;
+          option.textContent = product.title;
+          select.appendChild(option);
         });
+      }
 
-        // Load statistics
-        async function loadStats() {
-            try {
-                const [productsResponse, resellersResponse] = await Promise.all([
-                    fetch('/api/products'),
-                    fetch('/api/resellers')
-                ]);
-                
-                const products = await productsResponse.json();
-                const resellers = await resellersResponse.json();
-                
-                document.getElementById('total-products').textContent = products.length;
-                document.getElementById('total-resellers').textContent = resellers.length;
-                
-                // Count products with resellers
-                let assignedCount = 0;
-                for (const product of products) {
-                    const response = await fetch(`/api/products/${product.id}/resellers`);
-                    if (response.ok) {
-                        const productResellers = await response.json();
-                        if (productResellers.length > 0) assignedCount++;
-                    }
-                }
-                document.getElementById('assigned-products').textContent = assignedCount;
-                
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
+      // Filter products
+      function filterProducts() {
+        const searchTerm = document
+          .getElementById("product-search")
+          .value.toLowerCase();
+        const select = document.getElementById("product-select");
+        const options = select.querySelectorAll("option");
+
+        options.forEach((option) => {
+          if (option.value === "") return;
+          const productTitle = option.textContent.toLowerCase();
+          option.style.display = productTitle.includes(searchTerm)
+            ? "block"
+            : "none";
+        });
+      }
+
+      // Load product resellers
+      async function loadProductResellers() {
+        const productId = document.getElementById("product-select").value;
+        if (!productId) {
+          document.getElementById("reseller-section").style.display = "none";
+          return;
         }
 
-        // Load products
-        async function loadProducts() {
-            try {
-                const response = await fetch('/api/products');
-                if (!response.ok) throw new Error('Failed to load products');
-                
-                allProducts = await response.json();
-                populateProductSelect();
-                renderProductsGrid();
-                
-            } catch (error) {
-                console.error('Error loading products:', error);
-                showAlert('Error loading products: ' + error.message, 'error');
-            }
+        selectedProduct = allProducts.find((p) => p.id == productId);
+        document.getElementById("reseller-section").style.display = "block";
+
+        // Load current resellers for this product
+        try {
+          const response = await fetch(`/api/products/${productId}/resellers`);
+          if (response.ok) {
+            const productResellers = await response.json();
+            selectedResellers = productResellers.map((r) => r.id);
+          } else {
+            selectedResellers = [];
+          }
+        } catch (error) {
+          selectedResellers = [];
         }
 
-        // Load resellers
-        async function loadResellers() {
-            try {
-                const response = await fetch('/api/resellers');
-                if (!response.ok) throw new Error('Failed to load resellers');
-                
-                allResellers = await response.json();
-                
-            } catch (error) {
-                console.error('Error loading resellers:', error);
-                showAlert('Error loading resellers: ' + error.message, 'error');
-            }
-        }
+        renderResellerCheckboxes();
+      }
 
-        // Populate product select dropdown
-        function populateProductSelect() {
-            const select = document.getElementById('product-select');
-            select.innerHTML = '<option value="">Select a product...</option>';
-            
-            allProducts.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.textContent = product.title;
-                select.appendChild(option);
-            });
-        }
+      // Render reseller checkboxes
+      function renderResellerCheckboxes() {
+        const container = document.getElementById("reseller-checkboxes");
+        container.innerHTML = "";
 
-        // Filter products
-        function filterProducts() {
-            const searchTerm = document.getElementById('product-search').value.toLowerCase();
-            const select = document.getElementById('product-select');
-            const options = select.querySelectorAll('option');
-            
-            options.forEach(option => {
-                if (option.value === '') return;
-                const productTitle = option.textContent.toLowerCase();
-                option.style.display = productTitle.includes(searchTerm) ? 'block' : 'none';
-            });
-        }
+        allResellers.forEach((reseller) => {
+          const isSelected = selectedResellers.includes(reseller.id);
 
-        // Load product resellers
-        async function loadProductResellers() {
-            const productId = document.getElementById('product-select').value;
-            if (!productId) {
-                document.getElementById('reseller-section').style.display = 'none';
-                return;
-            }
+          const div = document.createElement("div");
+          div.className = `checkbox-item ${isSelected ? "checked" : ""}`;
+          div.onclick = () => toggleReseller(reseller.id);
 
-            selectedProduct = allProducts.find(p => p.id == productId);
-            document.getElementById('reseller-section').style.display = 'block';
-            
-            // Load current resellers for this product
-            try {
-                const response = await fetch(`/api/products/${productId}/resellers`);
-                if (response.ok) {
-                    const productResellers = await response.json();
-                    selectedResellers = productResellers.map(r => r.id);
-                } else {
-                    selectedResellers = [];
-                }
-            } catch (error) {
-                selectedResellers = [];
-            }
-
-            renderResellerCheckboxes();
-        }
-
-        // Render reseller checkboxes
-        function renderResellerCheckboxes() {
-            const container = document.getElementById('reseller-checkboxes');
-            container.innerHTML = '';
-
-            allResellers.forEach(reseller => {
-                const isSelected = selectedResellers.includes(reseller.id);
-                
-                const div = document.createElement('div');
-                div.className = `checkbox-item ${isSelected ? 'checked' : ''}`;
-                div.onclick = () => toggleReseller(reseller.id);
-                
-                div.innerHTML = `
-                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleReseller(${reseller.id})">
+          div.innerHTML = `
+                    <input type="checkbox" ${
+                      isSelected ? "checked" : ""
+                    } onchange="toggleReseller(${reseller.id})">
                     <div>
                         <strong>${reseller.name}</strong>
-                        ${reseller.description ? `<br><small>${reseller.description}</small>` : ''}
-                        ${reseller.website_url ? `<br><small>🌐 ${reseller.website_url}</small>` : ''}
+                        ${
+                          reseller.description
+                            ? `<br><small>${reseller.description}</small>`
+                            : ""
+                        }
+                        ${
+                          reseller.website_url
+                            ? `<br><small>🌐 ${reseller.website_url}</small>`
+                            : ""
+                        }
                     </div>
                 `;
-                
-                container.appendChild(div);
-            });
+
+          container.appendChild(div);
+        });
+      }
+
+      // Toggle reseller selection
+      function toggleReseller(resellerId) {
+        const index = selectedResellers.indexOf(resellerId);
+        if (index > -1) {
+          selectedResellers.splice(index, 1);
+        } else {
+          selectedResellers.push(resellerId);
+        }
+        renderResellerCheckboxes();
+      }
+
+      // Save product resellers
+      async function saveProductResellers() {
+        if (!selectedProduct) {
+          showAlert("Please select a product first", "error");
+          return;
         }
 
-        // Toggle reseller selection
-        function toggleReseller(resellerId) {
-            const index = selectedResellers.indexOf(resellerId);
-            if (index > -1) {
-                selectedResellers.splice(index, 1);
-            } else {
-                selectedResellers.push(resellerId);
+        const saveBtn = document.querySelector(
+          'button[onclick="saveProductResellers()"]'
+        );
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = "Saving...";
+        saveBtn.disabled = true;
+
+        try {
+          const response = await fetch(
+            `/api/products/${selectedProduct.id}/resellers`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ resellerIds: selectedResellers }),
             }
-            renderResellerCheckboxes();
+          );
+
+          if (!response.ok) throw new Error("Failed to save resellers");
+
+          showAlert(
+            `Successfully assigned ${selectedResellers.length} reseller(s) to "${selectedProduct.title}"`,
+            "success"
+          );
+          loadStats();
+          renderProductsGrid();
+        } catch (error) {
+          console.error("Error saving resellers:", error);
+          showAlert("Error saving resellers: " + error.message, "error");
+        } finally {
+          saveBtn.textContent = originalText;
+          saveBtn.disabled = false;
+        }
+      }
+
+      // Clear selection
+      function clearSelection() {
+        selectedResellers = [];
+        renderResellerCheckboxes();
+      }
+
+      // Create metafield definition
+      async function createMetafieldDefinition() {
+        const namespace = document.getElementById("metafield-namespace").value;
+        const key = document.getElementById("metafield-key").value;
+
+        if (!namespace || !key) {
+          showAlert(
+            "Please enter both namespace and key",
+            "error",
+            "metafield-status"
+          );
+          return;
         }
 
-        // Save product resellers
-        async function saveProductResellers() {
-            if (!selectedProduct) {
-                showAlert('Please select a product first', 'error');
-                return;
-            }
+        try {
+          const response = await fetch("/api/metafields/definition", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              namespace: namespace,
+              key: key,
+              name: "Selected Resellers",
+              description: "Resellers assigned to this product",
+              type: "json",
+            }),
+          });
 
-            const saveBtn = document.querySelector('button[onclick="saveProductResellers()"]');
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-
-            try {
-                const response = await fetch(`/api/products/${selectedProduct.id}/resellers`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ resellerIds: selectedResellers }),
-                });
-
-                if (!response.ok) throw new Error('Failed to save resellers');
-
-                showAlert(`Successfully assigned ${selectedResellers.length} reseller(s) to "${selectedProduct.title}"`, 'success');
-                loadStats();
-                renderProductsGrid();
-
-            } catch (error) {
-                console.error('Error saving resellers:', error);
-                showAlert('Error saving resellers: ' + error.message, 'error');
-            } finally {
-                saveBtn.textContent = originalText;
-                saveBtn.disabled = false;
-            }
+          if (response.ok) {
+            showAlert(
+              "Metafield definition created successfully! You can now see reseller assignments in your Shopify product metafields.",
+              "success",
+              "metafield-status"
+            );
+          } else {
+            throw new Error("Failed to create metafield definition");
+          }
+        } catch (error) {
+          console.error("Error creating metafield:", error);
+          showAlert(
+            "Error creating metafield: " + error.message,
+            "error",
+            "metafield-status"
+          );
         }
+      }
 
-        // Clear selection
-        function clearSelection() {
-            selectedResellers = [];
-            renderResellerCheckboxes();
-        }
+      // Render products grid
+      async function renderProductsGrid() {
+        const container = document.getElementById("products-grid");
+        container.innerHTML = "";
 
-        // Create metafield definition
-        async function createMetafieldDefinition() {
-            const namespace = document.getElementById('metafield-namespace').value;
-            const key = document.getElementById('metafield-key').value;
+        for (const product of allProducts) {
+          try {
+            const response = await fetch(
+              `/api/products/${product.id}/resellers`
+            );
+            const productResellers = response.ok ? await response.json() : [];
 
-            if (!namespace || !key) {
-                showAlert('Please enter both namespace and key', 'error', 'metafield-status');
-                return;
-            }
+            const card = document.createElement("div");
+            card.className = "product-card";
 
-            try {
-                const response = await fetch('/api/metafields/definition', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        namespace: namespace,
-                        key: key,
-                        name: 'Selected Resellers',
-                        description: 'Resellers assigned to this product',
-                        type: 'json'
-                    }),
-                });
-
-                if (response.ok) {
-                    showAlert('Metafield definition created successfully! You can now see reseller assignments in your Shopify product metafields.', 'success', 'metafield-status');
-                } else {
-                    throw new Error('Failed to create metafield definition');
-                }
-
-            } catch (error) {
-                console.error('Error creating metafield:', error);
-                showAlert('Error creating metafield: ' + error.message, 'error', 'metafield-status');
-            }
-        }
-
-        // Render products grid
-        async function renderProductsGrid() {
-            const container = document.getElementById('products-grid');
-            container.innerHTML = '';
-
-            for (const product of allProducts) {
-                try {
-                    const response = await fetch(`/api/products/${product.id}/resellers`);
-                    const productResellers = response.ok ? await response.json() : [];
-
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    
-                    card.innerHTML = `
+            card.innerHTML = `
                         <h3>${product.title}</h3>
                         <p>Product ID: ${product.id}</p>
                         <div class="selected-resellers">
-                            <h4>Assigned Resellers (${productResellers.length})</h4>
-                            ${productResellers.length > 0 ? 
-                                `<ul>${productResellers.map(r => `<li>${r.name}</li>`).join('')}</ul>` :
-                                '<p>No resellers assigned</p>'
+                            <h4>Assigned Resellers (${
+                              productResellers.length
+                            })</h4>
+                            ${
+                              productResellers.length > 0
+                                ? `<ul>${productResellers
+                                    .map((r) => `<li>${r.name}</li>`)
+                                    .join("")}</ul>`
+                                : "<p>No resellers assigned</p>"
                             }
                         </div>
                     `;
-                    
-                    container.appendChild(card);
-                } catch (error) {
-                    console.error('Error loading product resellers:', error);
-                }
-            }
-        }
 
-        // Show alert
-        function showAlert(message, type, elementId = 'save-status') {
-            const alertDiv = document.getElementById(elementId);
-            alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
-            alertDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                alertDiv.style.display = 'none';
-            }, 5000);
+            container.appendChild(card);
+          } catch (error) {
+            console.error("Error loading product resellers:", error);
+          }
         }
+      }
+
+      // Show alert
+      function showAlert(message, type, elementId = "save-status") {
+        const alertDiv = document.getElementById(elementId);
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        alertDiv.style.display = "block";
+
+        setTimeout(() => {
+          alertDiv.style.display = "none";
+        }, 5000);
+      }
     </script>
-</body>
+  </body>
 </html>

@@ -616,4 +616,6 @@ if (!fs.existsSync("uploads")) {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(
-    `Shopify app URL: ${process.e
+    `Shopify app URL: ${process.env.SHOPIFY_APP_URL || "http://localhost:3000"}`
+  );
+});
