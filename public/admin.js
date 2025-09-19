@@ -237,6 +237,13 @@ async function importResellers(csvFile) {
 
     if (result.imported > 0) {
       await loadResellers();
+      // Close the modal after successful import if no errors
+      const hasErrors = (result.errors && result.errors.length > 0) || (result.errorCount && result.errorCount > 0);
+      if (!hasErrors) {
+        setTimeout(() => {
+          hideImportModal();
+        }, 2000); // Wait 2 seconds to show results, then close
+      }
     }
   } catch (error) {
     showError("Failed to import resellers: " + error.message);
@@ -519,6 +526,9 @@ function showImportResults(result) {
         `
             : ""
         }
+        <div class="import-results-actions" style="margin-top: 15px;">
+          <button onclick="hideImportModal()" class="btn btn-primary">Close</button>
+        </div>
     `;
 }
 
