@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Instructions</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .warning strong {
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .success strong {
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Fix Instructions</h1>
+            <p>Replace the script in your theme.liquid file</p>
+        </div>
+        
+        <div class="content">
+            <div class="warning">
+                <strong>⚠️ Issue Found!</strong>
+                <p>The current script isn't working because it's not properly detecting Shopify admin pages. I've created a better version for you.</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 1: Remove the Old Script</h3>
+                <p>In your <code>theme.liquid</code> file, find and <strong>DELETE</strong> this line:</p>
+                <div class="code-block">
+&lt;script src="https://shopify-reseller-app-production.up.railway.app/product-reseller-embed.js"&gt;&lt;/script&gt;
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 2: Add the New Script</h3>
+                <p>Replace it with this <strong>NEW</strong> script:</p>
+                <div class="code-block">
+&lt;!-- Shopify Admin Reseller Selection --&gt;
+&lt;script&gt;
+  // Only load on product editing pages in Shopify admin
+  if (window.location.hostname.includes('myshopify.com') && 
+      window.location.pathname.includes('/admin/products/') && 
+      (window.location.pathname.includes('/edit') || window.location.pathname.match(/\/admin\/products\/\d+$/))) {
+    
+    const script = document.createElement('script');
+    script.src = 'https://shopify-reseller-app-production.up.railway.app/shopify-admin-reseller.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    console.log('🏪 Loading Shopify Admin Reseller Selection...');
+  }
+&lt;/script&gt;
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 3: Save and Test</h3>
+                <ol>
+                    <li><strong>Save</strong> your theme.liquid file</li>
+                    <li><strong>Go to</strong> any product editing page in your Shopify admin</li>
+                    <li><strong>Open</strong> browser console (F12) to see debug messages</li>
+                    <li><strong>Look for</strong> the reseller selection section</li>
+                </ol>
+            </div>
+
+            <div class="success">
+                <strong>✅ What's Different:</strong>
+                <ul>
+                    <li>Better detection of Shopify admin product pages</li>
+                    <li>More debugging information in console</li>
+                    <li>Improved UI design</li>
+                    <li>Better error handling</li>
+                    <li>More reliable insertion into the page</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>Step 4: Debug Information</h3>
+                <p>After adding the new script, open the browser console (F12) and look for these messages:</p>
+                <div class="code-block">
+🏪 Shopify Admin Reseller Script Loading...
+🔍 Checking if we should initialize...
+✅ On product editing page, starting initialization...
+🏗️ Creating reseller section...
+✅ Reseller section created and inserted
+📡 Loading resellers from API...
+✅ Loaded resellers: 3
+                </div>
+                <p>If you see any ❌ error messages, let me know what they say!</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/admin" class="btn">Back to Admin</a>
+                <a href="/theme-integration-guide" class="btn" style="margin-left: 10px;">View Full Guide</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

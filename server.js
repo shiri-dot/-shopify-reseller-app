@@ -397,6 +397,11 @@ app.get("/theme-integration-guide", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "theme-integration-guide.html"));
 });
 
+// Fix instructions
+app.get("/fix-instructions", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "fix-instructions.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

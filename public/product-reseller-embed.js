@@ -334,16 +334,46 @@
     
     // Main initialization
     function init() {
-        // Wait for the product form to be available
-        waitForElement('.product-form, .product-single__form, [data-product-form]', function(productForm) {
+        console.log('🏪 Reseller Selection Script Loading...');
+        console.log('Current URL:', window.location.href);
+        console.log('Current pathname:', window.location.pathname);
+        
+        // Check if we're on a product editing page in Shopify admin
+        if (!window.location.pathname.includes('/admin/products/') || 
+            (!window.location.pathname.includes('/edit') && !window.location.pathname.includes('/products/'))) {
+            console.log('❌ Not on a product editing page, skipping reseller selection');
+            return;
+        }
+        
+        console.log('✅ On product editing page, initializing reseller selection...');
+        
+        // Wait for the product form to be available - try multiple selectors for Shopify admin
+        waitForElement('.product-form, .product-single__form, [data-product-form], .Polaris-Page, .product-details, .product-edit-form, form[action*="products"], .admin-product-form, .product-editor', function(productForm) {
+            console.log('✅ Found product form:', productForm);
+            
             // Check if reseller section already exists
             if (document.getElementById(RESELLER_SECTION_ID)) {
+                console.log('❌ Reseller section already exists, skipping');
                 return;
+            }
+            
+            console.log('🏗️ Creating reseller section...');
+            
+            // Try to find a good insertion point
+            let insertionPoint = productForm;
+            
+            // Look for common Shopify admin containers
+            const adminContainer = document.querySelector('.Polaris-Page__Content, .admin-content, .product-details, .product-editor, .product-form-container');
+            if (adminContainer) {
+                insertionPoint = adminContainer;
+                console.log('✅ Found admin container:', adminContainer);
             }
             
             // Create and insert the reseller section
             const resellerSection = createResellerSection();
-            productForm.parentNode.insertBefore(resellerSection, productForm.nextSibling);
+            insertionPoint.appendChild(resellerSection);
+            
+            console.log('✅ Reseller section created and inserted');
             
             // Initialize the functionality
             initializeResellerSelection();
