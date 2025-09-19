@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Admin Integration - Reseller Selection</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .demo-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .demo-section h3 {
+            margin: 0 0 15px 0;
+            color: #1976d2;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .warning strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Shopify Admin Integration</h1>
+            <p>Add Reseller Selection Directly to Product Editing Pages</p>
+        </div>
+        
+        <div class="content">
+            <div class="demo-section">
+                <h3>🎯 Goal</h3>
+                <p>Add a "Select Resellers" section directly inside each product editor in Shopify admin, so you can assign resellers to products without leaving the product editing page.</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 1: Add the Script to Your Shopify Theme</h3>
+                <p>Add this script to your Shopify admin theme to inject the reseller selection interface:</p>
+                <div class="code-block">
+&lt;script src="<span class="highlight">https://your-app-url.railway.app/product-reseller-embed.js</span>"&gt;&lt;/script&gt;
+                </div>
+                <p><strong>Note:</strong> Replace <span class="highlight">your-app-url.railway.app</span> with your actual Railway deployment URL.</p>
+            </div>
+
+            <div class="step">
+                <h3>Step 2: Add to Admin Theme (admin.liquid)</h3>
+                <p>Add the script to your admin theme's <code>admin.liquid</code> file:</p>
+                <div class="code-block">
+&lt;!-- Add this before the closing &lt;/body&gt; tag --&gt;
+&lt;script src="https://your-app-url.railway.app/product-reseller-embed.js"&gt;&lt;/script&gt;
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 3: Alternative - Browser Extension</h3>
+                <p>For immediate testing, you can use a browser extension to inject the script:</p>
+                <div class="code-block">
+// Create a browser extension with this content script:
+// manifest.json
+{
+  "manifest_version": 3,
+  "name": "Reseller Selection",
+  "version": "1.0",
+  "content_scripts": [{
+    "matches": ["*://*.myshopify.com/admin/products/*"],
+    "js": ["https://your-app-url.railway.app/product-reseller-embed.js"]
+  }]
+}
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 4: Manual Injection (For Testing)</h3>
+                <p>To test immediately, open the browser console on any product editing page and run:</p>
+                <div class="code-block">
+// Copy and paste this into the browser console:
+const script = document.createElement('script');
+script.src = 'https://your-app-url.railway.app/product-reseller-embed.js';
+document.head.appendChild(script);
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Important:</strong> The script will automatically:
+                <ul>
+                    <li>Detect when you're on a product editing page</li>
+                    <li>Extract the product ID from the URL</li>
+                    <li>Load all available resellers from your API</li>
+                    <li>Show currently assigned resellers</li>
+                    <li>Allow you to select/deselect resellers with checkboxes</li>
+                    <li>Save changes automatically when you click "Save Resellers"</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>Step 5: What You'll See</h3>
+                <p>Once the script is loaded, you'll see a new section in your product editing page with:</p>
+                <ul>
+                    <li>✅ <strong>Reseller Selection Section</strong> - Appears below the product form</li>
+                    <li>✅ <strong>Checkboxes</strong> - For each reseller you've added</li>
+                    <li>✅ <strong>Select All/Clear All</strong> - Quick action buttons</li>
+                    <li>✅ <strong>Selected Count</strong> - Shows how many resellers are selected</li>
+                    <li>✅ <strong>Save Button</strong> - Saves your selections to the database</li>
+                    <li>✅ <strong>Visual Feedback</strong> - Selected resellers are highlighted in blue</li>
+                </ul>
+            </div>
+
+            <div class="demo-section">
+                <h3>🚀 Quick Test</h3>
+                <p>To test this immediately:</p>
+                <ol>
+                    <li>Go to any product editing page in your Shopify admin</li>
+                    <li>Open the browser console (F12)</li>
+                    <li>Paste the manual injection code from Step 4</li>
+                    <li>You should see the reseller selection section appear!</li>
+                </ol>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/admin" class="btn">Back to Admin</a>
+                <a href="/product-demo" class="btn btn-secondary" style="margin-left: 10px;">View Demo</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

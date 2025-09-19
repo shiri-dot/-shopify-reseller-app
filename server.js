@@ -385,6 +385,13 @@ app.get("/product-reseller-admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-reseller-admin.html"));
 });
 
+// Shopify admin integration guide
+app.get("/shopify-admin-integration", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "shopify-admin-integration.html")
+  );
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
