@@ -41,82 +41,112 @@ function initializeApp() {
 
 function setupEventListeners() {
   // Navigation buttons
-  navButtons.viewResellers.addEventListener("click", () =>
-    showView("resellers")
-  );
-  navButtons.addReseller.addEventListener("click", () => showAddResellerForm());
-  navButtons.importResellers.addEventListener("click", () =>
-    showView("import")
-  );
+  if (navButtons.viewResellers) {
+    navButtons.viewResellers.addEventListener("click", () =>
+      showView("resellers")
+    );
+  }
+  if (navButtons.addReseller) {
+    navButtons.addReseller.addEventListener("click", () =>
+      showAddResellerForm()
+    );
+  }
+  if (navButtons.importResellers) {
+    navButtons.importResellers.addEventListener("click", () =>
+      showView("import")
+    );
+  }
 
   // Form submission
-  form.addEventListener("submit", handleFormSubmit);
-  importForm.addEventListener("submit", handleImportSubmit);
+  if (form) {
+    form.addEventListener("submit", handleFormSubmit);
+  }
+  if (importForm) {
+    importForm.addEventListener("submit", handleImportSubmit);
+  }
 
   // Search functionality
-  searchBtn.addEventListener("click", handleSearch);
-  searchInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  });
+  if (searchBtn) {
+    searchBtn.addEventListener("click", handleSearch);
+  }
+  if (searchInput) {
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    });
+  }
 
   // Cancel buttons
-  document
-    .getElementById("cancelBtn")
-    .addEventListener("click", () => showView("resellers"));
-  document
-    .getElementById("cancelImportBtn")
-    .addEventListener("click", () => showView("resellers"));
+  const cancelBtn = document.getElementById("cancelBtn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => showView("resellers"));
+  }
+  const cancelImportBtn = document.getElementById("cancelImportBtn");
+  if (cancelImportBtn) {
+    cancelImportBtn.addEventListener("click", () => showView("resellers"));
+  }
 
   // Modal buttons
-  document.getElementById("modalCancel").addEventListener("click", hideModal);
-  document
-    .getElementById("modalConfirm")
-    .addEventListener("click", confirmModalAction);
+  const modalCancel = document.getElementById("modalCancel");
+  const modalConfirm = document.getElementById("modalConfirm");
+  if (modalCancel) modalCancel.addEventListener("click", hideModal);
+  if (modalConfirm) modalConfirm.addEventListener("click", confirmModalAction);
 }
 
 function showView(viewName) {
   // Hide all views
-  Object.values(views).forEach((view) => view.classList.remove("active"));
+  Object.values(views).forEach(
+    (view) => view && view.classList.remove("active")
+  );
 
   // Remove active class from all nav buttons
-  Object.values(navButtons).forEach((btn) => btn.classList.remove("active"));
+  Object.values(navButtons).forEach(
+    (btn) => btn && btn.classList.remove("active")
+  );
 
   // Show selected view
-  views[viewName].classList.add("active");
+  if (views[viewName]) views[viewName].classList.add("active");
 
   // Add active class to corresponding nav button
-  if (viewName === "resellers") {
+  if (viewName === "resellers" && navButtons.viewResellers) {
     navButtons.viewResellers.classList.add("active");
-  } else if (viewName === "form") {
+  } else if (viewName === "form" && navButtons.addReseller) {
     navButtons.addReseller.classList.add("active");
-  } else if (viewName === "import") {
+  } else if (viewName === "import" && navButtons.importResellers) {
     navButtons.importResellers.classList.add("active");
   }
 }
 
 function showAddResellerForm() {
   editingResellerId = null;
-  document.getElementById("formTitle").textContent = "Add New Reseller";
-  form.reset();
+  const formTitle = document.getElementById("formTitle");
+  if (formTitle) formTitle.textContent = "Add New Reseller";
+  if (form) form.reset();
   showView("form");
 }
 
 function showEditResellerForm(reseller) {
   editingResellerId = reseller.id;
-  document.getElementById("formTitle").textContent = "Edit Reseller";
+  const formTitle = document.getElementById("formTitle");
+  if (formTitle) formTitle.textContent = "Edit Reseller";
 
   // Populate form with reseller data
-  document.getElementById("resellerName").value = reseller.name || "";
-  document.getElementById("resellerLogo").value = reseller.logo_url || "";
-  document.getElementById("resellerDescription").value =
-    reseller.description || "";
-  document.getElementById("resellerWebsite").value = reseller.website_url || "";
-  document.getElementById("resellerLocation").value =
-    reseller.location_url || "";
-  document.getElementById("resellerLatitude").value = reseller.latitude || "";
-  document.getElementById("resellerLongitude").value = reseller.longitude || "";
+  const nameEl = document.getElementById("resellerName");
+  const logoEl = document.getElementById("resellerLogo");
+  const descEl = document.getElementById("resellerDescription");
+  const websiteEl = document.getElementById("resellerWebsite");
+  const locationEl = document.getElementById("resellerLocation");
+  const latEl = document.getElementById("resellerLatitude");
+  const lngEl = document.getElementById("resellerLongitude");
+
+  if (nameEl) nameEl.value = reseller.name || "";
+  if (logoEl) logoEl.value = reseller.logo_url || "";
+  if (descEl) descEl.value = reseller.description || "";
+  if (websiteEl) websiteEl.value = reseller.website_url || "";
+  if (locationEl) locationEl.value = reseller.location_url || "";
+  if (latEl) latEl.value = reseller.latitude || "";
+  if (lngEl) lngEl.value = reseller.longitude || "";
 
   showView("form");
 }
@@ -155,7 +185,7 @@ async function saveReseller(resellerData) {
 
     if (!response.ok) throw new Error("Failed to save reseller");
 
-    const result = await response.json();
+    await response.json();
     showSuccess(
       editingResellerId
         ? "Reseller updated successfully"
@@ -166,7 +196,7 @@ async function saveReseller(resellerData) {
     await loadResellers();
     showView("resellers");
 
-    return result;
+    return true;
   } catch (error) {
     showError("Failed to save reseller: " + error.message);
     throw error;
@@ -269,12 +299,14 @@ function handleImportSubmit(e) {
 }
 
 function handleSearch() {
-  const query = searchInput.value.trim();
+  const query = (searchInput && searchInput.value.trim()) || "";
   searchResellers(query);
 }
 
 // Rendering Functions
 function renderResellersList() {
+  if (!resellersList) return;
+
   if (resellers.length === 0) {
     resellersList.innerHTML =
       '<div class="text-center text-muted">No resellers found</div>';
@@ -347,7 +379,6 @@ function confirmDeleteReseller(resellerId, resellerName) {
 // Map Functions
 function initializeMap() {
   if (typeof google === "undefined") {
-    console.error("Google Maps API not loaded");
     return;
   }
 
@@ -426,6 +457,7 @@ function updateMap() {
 // Import Results
 function showImportResults(result) {
   const resultsDiv = document.getElementById("importResults");
+  if (!resultsDiv) return;
   const isError = result.errors > 0;
 
   resultsDiv.className = `import-results ${isError ? "error" : ""}`;
@@ -454,21 +486,25 @@ function showImportResults(result) {
 
 // Modal Functions
 function showModal(title, message, onConfirm) {
-  document.getElementById("modalTitle").textContent = title;
-  document.getElementById("modalMessage").textContent = message;
-  modal.style.display = "flex";
+  const modalTitle = document.getElementById("modalTitle");
+  const modalMessage = document.getElementById("modalMessage");
+  if (modalTitle) modalTitle.textContent = title;
+  if (modalMessage) modalMessage.textContent = message;
+  if (modal) modal.style.display = "flex";
 
   // Store the confirm action
-  modal.dataset.confirmAction = onConfirm.toString();
+  if (modal) modal.dataset.confirmAction = onConfirm.toString();
 }
 
 function hideModal() {
-  modal.style.display = "none";
+  if (modal) modal.style.display = "none";
 }
 
 function confirmModalAction() {
+  if (!modal) return;
   const action = modal.dataset.confirmAction;
   if (action) {
+    // eslint-disable-next-line no-eval
     eval("(" + action + ")()");
   }
   hideModal();
@@ -476,20 +512,18 @@ function confirmModalAction() {
 
 // Utility Functions
 function showLoading() {
-  loadingOverlay.style.display = "flex";
+  if (loadingOverlay) loadingOverlay.style.display = "flex";
 }
 
 function hideLoading() {
-  loadingOverlay.style.display = "none";
+  if (loadingOverlay) loadingOverlay.style.display = "none";
 }
 
 function showSuccess(message) {
-  // Simple success notification - you can enhance this with a proper notification system
   alert("Success: " + message);
 }
 
 function showError(message) {
-  // Simple error notification - you can enhance this with a proper notification system
   alert("Error: " + message);
 }
 
