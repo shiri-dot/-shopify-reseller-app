@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Reseller Selection</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .product-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+        }
+        .reseller-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .reseller-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e1e3e5;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        .reseller-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+        }
+        .reseller-item.selected {
+            background: #f0f8ff;
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+        }
+        .reseller-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        .reseller-info {
+            flex: 1;
+        }
+        .reseller-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .reseller-description {
+            font-size: 14px;
+            color: #6c757d;
+            margin: 0;
+        }
+        .reseller-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-left: 15px;
+        }
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .selected-count {
+            background: #e3f2fd;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            color: #1976d2;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+        .message {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 16px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Product Reseller Selection</h1>
+            <p>Select which resellers carry this product</p>
+        </div>
+        
+        <div class="content">
+            <button class="back-btn" onclick="window.location.href='/admin'">
+                ← Back to Admin
+            </button>
+            
+            <div id="productInfo" class="product-info" style="display: none;">
+                <h3 id="productTitle">Product Name</h3>
+                <p id="productDescription">Select resellers for this product</p>
+            </div>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                Loading resellers...
+            </div>
+            
+            <div id="content" style="display: none;">
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="selectAll()">
+                        ✓ Select All
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        ✗ Clear All
+                    </button>
+                </div>
+                
+                <div id="selectedCount" class="selected-count">
+                    0 reseller(s) selected
+                </div>
+                
+                <div class="reseller-section">
+                    <h3 style="margin-top: 0;">Available Resellers</h3>
+                    <div id="resellerList">
+                        <!-- Resellers will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button id="saveBtn" class="btn btn-success" onclick="saveResellers()">
+                        💾 Save Resellers
+                    </button>
+                </div>
+            </div>
+            
+            <div id="messages"></div>
+        </div>
+    </div>
+
+    <script>
+        let allResellers = [];
+        let selectedResellers = [];
+        let currentProductId = null;
+
+        // Get product ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        currentProductId = urlParams.get('productId') || urlParams.get('id') || 'sample-product-1';
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductInfo();
+            loadResellers();
+            loadProductResellers();
+        });
+
+        function loadProductInfo() {
+            // For demo purposes - in real implementation, fetch from Shopify API
+            document.getElementById('productTitle').textContent = `Product ID: ${currentProductId}`;
+            document.getElementById('productDescription').textContent = 'Select which resellers carry this product';
+            document.getElementById('productInfo').style.display = 'block';
+        }
+
+        async function loadResellers() {
+            try {
+                const response = await fetch('/api/resellers');
+                if (!response.ok) throw new Error('Failed to load resellers');
+                
+                allResellers = await response.json();
+                renderResellers();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                showError('Error loading resellers: ' + error.message);
+            }
+        }
+
+        async function loadProductResellers() {
+            try {
+                const response = await fetch(`/api/products/${currentProductId}/resellers`);
+                if (!response.ok) throw new Error('Failed to load product resellers');
+                
+                const productResellers = await response.json();
+                selectedResellers = productResellers.map(r => r.id);
+                updateSelectedCount();
+            } catch (error) {
+                console.error('Error loading product resellers:', error);
+                selectedResellers = [];
+                updateSelectedCount();
+            }
+        }
+
+        function renderResellers() {
+            const list = document.getElementById('resellerList');
+            list.innerHTML = '';
+
+            if (allResellers.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">No resellers available. <a href="/admin">Add resellers first</a>.</p>';
+                return;
+            }
+
+            allResellers.forEach(reseller => {
+                const item = document.createElement('div');
+                item.className = 'reseller-item';
+                if (selectedResellers.includes(reseller.id)) {
+                    item.classList.add('selected');
+                }
+
+                item.innerHTML = `
+                    <input type="checkbox" 
+                           class="reseller-checkbox"
+                           ${selectedResellers.includes(reseller.id) ? 'checked' : ''}
+                           onchange="toggleReseller(${reseller.id})">
+                    <div class="reseller-info">
+                        <div class="reseller-name">${reseller.name}</div>
+                        ${reseller.description ? `<div class="reseller-description">${reseller.description}</div>` : ''}
+                    </div>
+                    ${reseller.logo_url ? `<img src="${reseller.logo_url}" alt="${reseller.name}" class="reseller-logo" onerror="this.style.display='none'">` : ''}
+                `;
+
+                list.appendChild(item);
+            });
+        }
+
+        function toggleReseller(resellerId) {
+            const index = selectedResellers.indexOf(resellerId);
+            if (index > -1) {
+                selectedResellers.splice(index, 1);
+            } else {
+                selectedResellers.push(resellerId);
+            }
+            
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            selectedResellers = allResellers.map(r => r.id);
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function clearAll() {
+            selectedResellers = [];
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedResellers.length;
+            const countElement = document.getElementById('selectedCount');
+            countElement.textContent = `${count} reseller(s) selected`;
+            
+            if (count > 0) {
+                countElement.style.background = '#d4edda';
+                countElement.style.color = '#155724';
+            } else {
+                countElement.style.background = '#e3f2fd';
+                countElement.style.color = '#1976d2';
+            }
+        }
+
+        async function saveResellers() {
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '💾 Saving...';
+
+            try {
+                const response = await fetch(`/api/products/${currentProductId}/resellers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ resellerIds: selectedResellers }),
+                });
+
+                if (!response.ok) throw new Error('Failed to save resellers');
+
+                showMessage('✅ Resellers updated successfully!', 'success');
+                
+            } catch (error) {
+                showMessage('❌ Error saving resellers: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save Resellers';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            messagesDiv.appendChild(messageDiv);
+            
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            showMessage('❌ ' + message, 'error');
+        }
+    </script>
+</body>
+</html>

@@ -380,6 +380,11 @@ app.get("/admin-extension", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-extension.html"));
 });
 
+// Product reseller admin interface
+app.get("/product-reseller-admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "product-reseller-admin.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
