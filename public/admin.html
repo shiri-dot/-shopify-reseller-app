@@ -11,173 +11,72 @@
     />
   </head>
   <body>
-    <div class="Polaris-Page">
-      <!-- Header -->
-      <div class="Polaris-Page__Header">
-        <div class="Polaris-Page__HeaderContent">
-          <h1 class="Polaris-Page__Title">Reseller Management</h1>
-          <div class="Polaris-Page__Actions">
-            <button
-              id="addResellerBtn"
-              class="Polaris-Button Polaris-Button--primary"
-              onclick="showAddResellerModal()"
-            >
-              <span class="Polaris-Button__Content">
-                <span class="Polaris-Button__Text">Add Reseller</span>
-              </span>
-            </button>
-            <button
-              id="importBtn"
-              class="Polaris-Button Polaris-Button--secondary"
-            >
-              <span class="Polaris-Button__Content">
-                <span class="Polaris-Button__Text">Import CSV</span>
-              </span>
-            </button>
-          </div>
+    <header class="admin-header">
+      <div class="header-content">
+        <h1>Reseller Management</h1>
+        <div class="header-actions">
+          <button
+            id="addResellerBtn"
+            class="btn btn-primary"
+            onclick="showAddResellerModal()"
+          >
+            Add Reseller
+          </button>
+          <button id="importBtn" class="btn btn-secondary">Import CSV</button>
         </div>
       </div>
+    </header>
 
-      <!-- Main Content -->
-      <div class="Polaris-Page__Content">
-        <!-- Search Section -->
-        <div class="Polaris-Card">
-          <div class="Polaris-Card__Section">
-            <div class="Polaris-Stack Polaris-Stack--alignment-center">
-              <div class="Polaris-Stack__Item Polaris-Stack__Item--fill">
-                <div class="Polaris-TextField">
-                  <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="Search resellers..."
-                    class="Polaris-TextField__Input"
-                  />
-                </div>
-              </div>
-              <div class="Polaris-Stack__Item">
-                <button
-                  id="searchBtn"
-                  class="Polaris-Button Polaris-Button--primary"
-                >
-                  <span class="Polaris-Button__Content">
-                    <span class="Polaris-Button__Text">Search</span>
-                  </span>
-                </button>
-              </div>
-              <div class="Polaris-Stack__Item">
-                <button
-                  id="clearSearchBtn"
-                  class="Polaris-Button Polaris-Button--secondary"
-                >
-                  <span class="Polaris-Button__Content">
-                    <span class="Polaris-Button__Text">Clear</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+    <main class="admin-main">
+      <!-- Search Section -->
+      <section class="search-section">
+        <div class="search-container">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search resellers..."
+          />
+          <button id="searchBtn" class="btn btn-primary">Search</button>
+          <button id="clearSearchBtn" class="btn btn-secondary">Clear</button>
         </div>
+      </section>
 
-        <!-- Resellers Table -->
-        <div class="Polaris-Card">
-          <div class="Polaris-Card__Section">
-            <div class="Polaris-DataTable">
-              <div class="Polaris-DataTable__ScrollContainer">
-                <table class="Polaris-DataTable__Table">
-                  <thead>
-                    <tr>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Logo
-                      </th>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Name
-                      </th>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Description
-                      </th>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Website
-                      </th>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Location
-                      </th>
-                      <th
-                        class="Polaris-DataTable__Cell Polaris-DataTable__Cell--header"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="resellersTableBody">
-                    <!-- Resellers will be loaded here -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Resellers Table -->
+      <section class="table-container">
+        <table class="resellers-table">
+          <thead>
+            <tr>
+              <th>Logo</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Website</th>
+              <th>Location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="resellersTableBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </section>
 
-        <!-- Pagination -->
-        <div class="Polaris-Card">
-          <div class="Polaris-Card__Section">
-            <div
-              class="Polaris-Stack Polaris-Stack--alignment-center Polaris-Stack--distribution-equalSpacing"
-            >
-              <div class="Polaris-Stack__Item">
-                <span
-                  id="paginationInfo"
-                  class="Polaris-TextStyle--variationSubdued"
-                  >Showing 0 of 0 resellers</span
-                >
-              </div>
-              <div class="Polaris-Stack__Item">
-                <div class="Polaris-Stack Polaris-Stack--alignment-center">
-                  <div class="Polaris-Stack__Item">
-                    <button
-                      id="prevPageBtn"
-                      class="Polaris-Button Polaris-Button--secondary"
-                      disabled
-                    >
-                      <span class="Polaris-Button__Content">
-                        <span class="Polaris-Button__Text">Previous</span>
-                      </span>
-                    </button>
-                  </div>
-                  <div class="Polaris-Stack__Item">
-                    <span
-                      id="pageInfo"
-                      class="Polaris-TextStyle--variationSubdued"
-                      >Page 1 of 1</span
-                    >
-                  </div>
-                  <div class="Polaris-Stack__Item">
-                    <button
-                      id="nextPageBtn"
-                      class="Polaris-Button Polaris-Button--secondary"
-                      disabled
-                    >
-                      <span class="Polaris-Button__Content">
-                        <span class="Polaris-Button__Text">Next</span>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Pagination -->
+      <section class="pagination-container">
+        <span id="paginationInfo" class="pagination-info"
+          >Showing 0 of 0 resellers</span
+        >
+        <div class="pagination-controls">
+          <button id="prevPageBtn" class="btn btn-secondary" disabled>
+            Previous
+          </button>
+          <span id="pageInfo" class="pagination-info">Page 1 of 1</span>
+          <button id="nextPageBtn" class="btn btn-secondary" disabled>
+            Next
+          </button>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <!-- Add/Edit Reseller Modal -->
     <div id="resellerModal" class="modal" style="display: none">
