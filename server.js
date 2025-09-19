@@ -375,6 +375,11 @@ app.get("/product-resellers", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-resellers.html"));
 });
 
+// Admin extension for product reseller selection
+app.get("/admin-extension", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin-extension.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

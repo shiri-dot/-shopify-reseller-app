@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Reseller Selector</title>
+    <script src="https://unpkg.com/@shopify/app-bridge@3"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@3"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .reseller-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .reseller-selector h2 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .reseller-list {
+            margin: 20px 0;
+        }
+        .reseller-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e1e3e5;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background: white;
+        }
+        .reseller-item.selected {
+            background: #f0f8ff;
+            border-color: #007bff;
+        }
+        .reseller-item input[type="checkbox"] {
+            margin-right: 12px;
+        }
+        .reseller-info {
+            flex: 1;
+        }
+        .reseller-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 4px 0;
+        }
+        .reseller-description {
+            font-size: 14px;
+            color: #6c757d;
+            margin: 0;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        .selected-count {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #1976d2;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reseller-selector">
+        <h2>Select Resellers for this Product</h2>
+        
+        <div id="loading" class="loading">
+            Loading resellers...
+        </div>
+        
+        <div id="content" style="display: none;">
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+            </div>
+            
+            <div id="selectedCount" class="selected-count">
+                0 reseller(s) selected
+            </div>
+            
+            <div id="resellerList" class="reseller-list">
+                <!-- Resellers will be loaded here -->
+            </div>
+            
+            <div class="actions">
+                <button id="saveBtn" class="btn btn-primary" onclick="saveResellers()">
+                    Save Resellers
+                </button>
+            </div>
+        </div>
+        
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        // Initialize App Bridge
+        const app = window.AppBridge.createApp({
+            apiKey: 'your-api-key', // You'll need to replace this with your actual API key
+            host: new URLSearchParams(window.location.search).get('host'),
+        });
+
+        let allResellers = [];
+        let selectedResellers = [];
+        let currentProductId = null;
+
+        // Get product ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        currentProductId = urlParams.get('productId') || urlParams.get('id');
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentProductId) {
+                loadResellers();
+                loadProductResellers();
+            } else {
+                showError('No product ID provided');
+            }
+        });
+
+        async function loadResellers() {
+            try {
+                const response = await fetch('/api/resellers');
+                if (!response.ok) throw new Error('Failed to load resellers');
+                
+                allResellers = await response.json();
+                renderResellers();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            } catch (error) {
+                showError('Error loading resellers: ' + error.message);
+            }
+        }
+
+        async function loadProductResellers() {
+            try {
+                const response = await fetch(`/api/products/${currentProductId}/resellers`);
+                if (!response.ok) throw new Error('Failed to load product resellers');
+                
+                const productResellers = await response.json();
+                selectedResellers = productResellers.map(r => r.id);
+                updateSelectedCount();
+            } catch (error) {
+                console.error('Error loading product resellers:', error);
+                selectedResellers = [];
+                updateSelectedCount();
+            }
+        }
+
+        function renderResellers() {
+            const list = document.getElementById('resellerList');
+            list.innerHTML = '';
+
+            allResellers.forEach(reseller => {
+                const item = document.createElement('div');
+                item.className = 'reseller-item';
+                if (selectedResellers.includes(reseller.id)) {
+                    item.classList.add('selected');
+                }
+
+                item.innerHTML = `
+                    <input type="checkbox" 
+                           ${selectedResellers.includes(reseller.id) ? 'checked' : ''}
+                           onchange="toggleReseller(${reseller.id})">
+                    <div class="reseller-info">
+                        <div class="reseller-name">${reseller.name}</div>
+                        ${reseller.description ? `<div class="reseller-description">${reseller.description}</div>` : ''}
+                    </div>
+                `;
+
+                list.appendChild(item);
+            });
+        }
+
+        function toggleReseller(resellerId) {
+            const index = selectedResellers.indexOf(resellerId);
+            if (index > -1) {
+                selectedResellers.splice(index, 1);
+            } else {
+                selectedResellers.push(resellerId);
+            }
+            
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function selectAll() {
+            selectedResellers = allResellers.map(r => r.id);
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function clearAll() {
+            selectedResellers = [];
+            renderResellers();
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedResellers.length;
+            document.getElementById('selectedCount').textContent = 
+                `${count} reseller(s) selected`;
+        }
+
+        async function saveResellers() {
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`/api/products/${currentProductId}/resellers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ resellerIds: selectedResellers }),
+                });
+
+                if (!response.ok) throw new Error('Failed to save resellers');
+
+                showMessage('Resellers updated successfully!', 'success');
+                
+                // Close the modal/extension
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'close' }, '*');
+                }
+                
+            } catch (error) {
+                showMessage('Error saving resellers: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Resellers';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            messagesDiv.appendChild(messageDiv);
+            
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            showMessage(message, 'error');
+        }
+    </script>
+</body>
+</html>
