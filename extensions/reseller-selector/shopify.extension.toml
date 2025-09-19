@@ -1,0 +1,21 @@
+api_version = "2023-10"
+
+[[extensions]]
+type = "admin_action"
+name = "reseller_selector"
+
+[[extensions.targeting]]
+target = "admin.product-details.action"
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "api_url"
+type = "single_line_text_field"
+name = "API URL"
+description = "The URL of your reseller management API"
+
+[[extensions.settings.fields]]
+key = "reseller_app_url"
+type = "single_line_text_field"
+name = "Reseller App URL"
+description = "URL to your reseller management app"

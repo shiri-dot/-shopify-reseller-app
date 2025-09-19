@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Reseller Management</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <style>
+        .product-reseller-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .reseller-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .reseller-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .reseller-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+        }
+        .reseller-card.selected {
+            border-color: #007bff;
+            background: #f8f9fa;
+        }
+        .reseller-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .reseller-card p {
+            margin: 0 0 15px 0;
+            color: #6c757d;
+        }
+        .reseller-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .reseller-card-actions a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .reseller-card-actions a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .product-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .product-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .product-info p {
+            margin: 0;
+            color: #6c757d;
+        }
+        .checkbox {
+            margin-right: 10px;
+        }
+        .selected-resellers {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .selected-resellers h4 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .selected-reseller-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .remove-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="product-reseller-container">
+        <header class="admin-header">
+            <div class="header-content">
+                <h1>Product Reseller Management</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="window.location.href='/admin'">
+                        Back to Admin
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <!-- Product Selection -->
+            <div class="product-selector">
+                <h2>Select Product</h2>
+                <div class="form-group">
+                    <label for="productSelect">Choose a product to manage resellers:</label>
+                    <select id="productSelect" onchange="loadProductResellers()">
+                        <option value="">Select a product...</option>
+                    </select>
+                </div>
+                
+                <div id="productInfo" class="product-info" style="display: none;">
+                    <h3 id="productTitle"></h3>
+                    <p id="productDescription"></p>
+                </div>
+            </div>
+
+            <!-- Reseller Selection -->
+            <div id="resellerSelector" class="reseller-selector" style="display: none;">
+                <h2>Select Resellers</h2>
+                <p>Choose which resellers carry this product:</p>
+                
+                <div class="form-group">
+                    <button class="btn" onclick="selectAllResellers()">Select All</button>
+                    <button class="btn btn-secondary" onclick="clearAllResellers()">Clear All</button>
+                    <button class="btn" onclick="saveResellers()" id="saveBtn">Save Resellers</button>
+                </div>
+
+                <div id="resellersGrid" class="reseller-grid">
+                    <!-- Resellers will be loaded here -->
+                </div>
+
+                <div id="selectedResellers" class="selected-resellers">
+                    <h4>Selected Resellers (<span id="selectedCount">0</span>)</h4>
+                    <div id="selectedList">
+                        <!-- Selected resellers will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages"></div>
+        </main>
+    </div>
+
+    <script>
+        let allResellers = [];
+        let selectedResellers = [];
+        let currentProduct = null;
+
+        // Load products when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            loadAllResellers();
+        });
+
+        async function loadProducts() {
+            try {
+                // For demo purposes, we'll create some sample products
+                // In a real implementation, you'd fetch from Shopify API
+                const sampleProducts = [
+                    { id: 'sample-product-1', title: 'Sample Product 1', description: 'This is a sample product for testing' },
+                    { id: 'sample-product-2', title: 'Sample Product 2', description: 'Another sample product' },
+                    { id: 'sample-product-3', title: 'Sample Product 3', description: 'Third sample product' }
+                ];
+
+                const productSelect = document.getElementById('productSelect');
+                productSelect.innerHTML = '<option value="">Select a product...</option>';
+                
+                sampleProducts.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.title;
+                    productSelect.appendChild(option);
+                });
+
+            } catch (error) {
+                showMessage('Error loading products: ' + error.message, 'error');
+            }
+        }
+
+        async function loadAllResellers() {
+            try {
+                const response = await fetch('/api/resellers');
+                if (!response.ok) throw new Error('Failed to load resellers');
+                
+                allResellers = await response.json();
+            } catch (error) {
+                showMessage('Error loading resellers: ' + error.message, 'error');
+            }
+        }
+
+        function loadProductResellers() {
+            const productSelect = document.getElementById('productSelect');
+            const productId = productSelect.value;
+            
+            if (!productId) {
+                document.getElementById('resellerSelector').style.display = 'none';
+                document.getElementById('productInfo').style.display = 'none';
+                return;
+            }
+
+            // Set current product
+            currentProduct = {
+                id: productId,
+                title: productSelect.options[productSelect.selectedIndex].text
+            };
+
+            // Show product info
+            document.getElementById('productTitle').textContent = currentProduct.title;
+            document.getElementById('productDescription').textContent = 'Manage resellers for this product';
+            document.getElementById('productInfo').style.display = 'block';
+
+            // Load resellers for this product
+            loadResellersForProduct(productId);
+            
+            // Show reseller selector
+            document.getElementById('resellerSelector').style.display = 'block';
+        }
+
+        async function loadResellersForProduct(productId) {
+            try {
+                const response = await fetch(`/api/products/${productId}/resellers`);
+                if (!response.ok) throw new Error('Failed to load product resellers');
+                
+                const productResellers = await response.json();
+                selectedResellers = productResellers.map(r => r.id);
+                
+                renderResellersGrid();
+                updateSelectedDisplay();
+                
+            } catch (error) {
+                showMessage('Error loading product resellers: ' + error.message, 'error');
+                selectedResellers = [];
+                renderResellersGrid();
+                updateSelectedDisplay();
+            }
+        }
+
+        function renderResellersGrid() {
+            const grid = document.getElementById('resellersGrid');
+            grid.innerHTML = '';
+
+            allResellers.forEach(reseller => {
+                const card = document.createElement('div');
+                card.className = 'reseller-card';
+                if (selectedResellers.includes(reseller.id)) {
+                    card.classList.add('selected');
+                }
+
+                card.innerHTML = `
+                    <input type="checkbox" class="checkbox" 
+                           ${selectedResellers.includes(reseller.id) ? 'checked' : ''}
+                           onchange="toggleReseller(${reseller.id})">
+                    <h4>${reseller.name}</h4>
+                    ${reseller.description ? `<p>${reseller.description}</p>` : ''}
+                    <div class="reseller-card-actions">
+                        ${reseller.website_url ? `<a href="${reseller.website_url}" target="_blank">Website</a>` : ''}
+                        ${reseller.location_url ? `<a href="${reseller.location_url}" target="_blank">Location</a>` : ''}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleReseller(resellerId) {
+            const index = selectedResellers.indexOf(resellerId);
+            if (index > -1) {
+                selectedResellers.splice(index, 1);
+            } else {
+                selectedResellers.push(resellerId);
+            }
+            
+            renderResellersGrid();
+            updateSelectedDisplay();
+        }
+
+        function selectAllResellers() {
+            selectedResellers = allResellers.map(r => r.id);
+            renderResellersGrid();
+            updateSelectedDisplay();
+        }
+
+        function clearAllResellers() {
+            selectedResellers = [];
+            renderResellersGrid();
+            updateSelectedDisplay();
+        }
+
+        function updateSelectedDisplay() {
+            const count = selectedResellers.length;
+            document.getElementById('selectedCount').textContent = count;
+            
+            const list = document.getElementById('selectedList');
+            list.innerHTML = '';
+
+            if (count === 0) {
+                list.innerHTML = '<p>No resellers selected</p>';
+                return;
+            }
+
+            selectedResellers.forEach(id => {
+                const reseller = allResellers.find(r => r.id === id);
+                if (reseller) {
+                    const item = document.createElement('div');
+                    item.className = 'selected-reseller-item';
+                    item.innerHTML = `
+                        <span>${reseller.name}</span>
+                        <button class="remove-btn" onclick="removeReseller(${id})">Remove</button>
+                    `;
+                    list.appendChild(item);
+                }
+            });
+        }
+
+        function removeReseller(resellerId) {
+            const index = selectedResellers.indexOf(resellerId);
+            if (index > -1) {
+                selectedResellers.splice(index, 1);
+                renderResellersGrid();
+                updateSelectedDisplay();
+            }
+        }
+
+        async function saveResellers() {
+            if (!currentProduct) return;
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch(`/api/products/${currentProduct.id}/resellers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ resellerIds: selectedResellers }),
+                });
+
+                if (!response.ok) throw new Error('Failed to save resellers');
+
+                showMessage(`Successfully updated resellers for ${currentProduct.title}!`, 'success');
+                
+            } catch (error) {
+                showMessage('Error saving resellers: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Resellers';
+            }
+        }
+
+        function showMessage(message, type) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            messagesDiv.appendChild(messageDiv);
+            
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

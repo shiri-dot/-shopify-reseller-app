@@ -370,6 +370,11 @@ app.get("/product-demo", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-demo.html"));
 });
 
+// Product reseller management route
+app.get("/product-resellers", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "product-resellers.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
