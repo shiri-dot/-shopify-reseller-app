@@ -227,9 +227,35 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
   const errors = [];
 
   fs.createReadStream(req.file.path)
-    .pipe(csv())
+    .pipe(
+      csv({
+        mapHeaders: ({ header }) => {
+          const cleaned = (header || "")
+            .toString()
+            .replace(/^\uFEFF/, "") // strip BOM
+            .trim()
+            .toLowerCase();
+          console.log("Header mapping:", `"${header}" -> "${cleaned}"`);
+          return cleaned;
+        },
+        mapValues: ({ value }) => {
+          const cleaned = typeof value === "string" ? value.trim() : value;
+          return cleaned;
+        },
+      })
+    )
     .on("data", (row) => {
       try {
+        // Debug logging to see what's being parsed
+        console.log("Raw CSV row:", JSON.stringify(row, null, 2));
+        console.log("Row keys:", Object.keys(row));
+        console.log(
+          "Row.name value:",
+          `"${row.name}"`,
+          "Type:",
+          typeof row.name
+        );
+
         const name = (row.name || "")
           .toString()
           .replace(/^\uFEFF/, "")
@@ -241,7 +267,10 @@ app.post("/api/resellers/import", upload.single("csv"), (req, res) => {
         const latitude = row.latitude || row.lat || null;
         const longitude = row.longitude || row.lng || null;
 
+        console.log("Processed name:", `"${name}"`, "Length:", name.length);
+
         if (!name) {
+          console.log("ERROR: Name is empty or undefined");
           errors.push({ row, error: "Name is required" });
           return;
         }
