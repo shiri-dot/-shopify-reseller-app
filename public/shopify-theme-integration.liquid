@@ -1,0 +1,268 @@
+{% comment %}
+  Shopify Theme Integration for Reseller App
+  Add this code to your product template (product.liquid) or create a new section
+{% endcomment %}
+
+{% comment %} Load reseller data for current product {% endcomment %}
+{% assign product_handle = product.handle %}
+
+<div id="reseller-app-container" data-product-handle="{{ product_handle }}">
+  <div class="reseller-section">
+    <h3 class="reseller-section-title">Find Resellers</h3>
+    <p class="reseller-section-description">This product is available through our authorized resellers.</p>
+    
+    <div class="reseller-loading" id="reseller-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading resellers...</p>
+    </div>
+    
+    <div class="reseller-content" id="reseller-content" style="display: none;">
+      <div class="reseller-controls">
+        <div class="reseller-dropdown-container">
+          <label for="reseller-select">Select Resellers:</label>
+          <select id="reseller-select" multiple class="reseller-select">
+            <!-- Options will be populated dynamically -->
+          </select>
+          <div class="reseller-actions">
+            <button type="button" id="select-all-resellers" class="btn btn-secondary btn-sm">Select All</button>
+            <button type="button" id="clear-resellers" class="btn btn-secondary btn-sm">Clear All</button>
+          </div>
+        </div>
+      </div>
+      
+      <div id="selected-resellers" class="selected-resellers">
+        <!-- Selected resellers will be displayed here -->
+      </div>
+      
+      <div id="reseller-map-container" class="reseller-map-container" style="display: none;">
+        <h4>Reseller Locations</h4>
+        <div id="reseller-map" class="reseller-map"></div>
+      </div>
+    </div>
+    
+    <div class="reseller-error" id="reseller-error" style="display: none;">
+      <p>Unable to load reseller information. Please try again later.</p>
+    </div>
+  </div>
+</div>
+
+{% comment %} Include the reseller app JavaScript {% endcomment %}
+<script src="{{ 'reseller-app.js' | asset_url }}" defer></script>
+
+{% comment %} CSS Styles for the reseller section {% endcomment %}
+<style>
+  .reseller-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .reseller-section-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .reseller-section-description {
+    margin: 0 0 1.5rem 0;
+    color: #6c757d;
+  }
+  
+  .reseller-loading {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .reseller-dropdown-container {
+    margin-bottom: 1rem;
+  }
+  
+  .reseller-dropdown-container label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .reseller-select {
+    width: 100%;
+    min-height: 120px;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 0.875rem;
+  }
+  
+  .reseller-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary {
+    background: #007bff;
+    color: #fff;
+  }
+  
+  .btn-primary:hover {
+    background: #0056b3;
+  }
+  
+  .btn-secondary {
+    background: #6c757d;
+    color: #fff;
+  }
+  
+  .btn-secondary:hover {
+    background: #545b62;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .selected-resellers {
+    margin-top: 1.5rem;
+  }
+  
+  .selected-resellers h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+  }
+  
+  .reseller-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  
+  .reseller-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 1rem;
+  }
+  
+  .reseller-card-header {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .reseller-card-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  
+  .reseller-card-logo-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .reseller-card-info {
+    flex: 1;
+  }
+  
+  .reseller-card-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+  
+  .reseller-card-description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+  
+  .reseller-card-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .reseller-map-container {
+    margin-top: 1.5rem;
+  }
+  
+  .reseller-map-container h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+  }
+  
+  .reseller-map {
+    width: 100%;
+    height: 300px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .no-resellers {
+    color: #6c757d;
+    font-style: italic;
+  }
+  
+  .reseller-error {
+    color: #dc3545;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  @media (max-width: 768px) {
+    .reseller-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .reseller-card-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .reseller-card-actions {
+      justify-content: center;
+    }
+  }
+</style>

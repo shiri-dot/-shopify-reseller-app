@@ -365,6 +365,11 @@ app.get("/admin/*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
+// Product integration demo route
+app.get("/product-demo", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "product-demo.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
