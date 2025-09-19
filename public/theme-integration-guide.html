@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Integration Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f6f6f7;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .step h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        .code-block {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .warning strong {
+            color: #856404;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .success strong {
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Theme Integration Guide</h1>
+            <p>Add Reseller Selection to Your Shopify Theme</p>
+        </div>
+        
+        <div class="content">
+            <div class="success">
+                <strong>✅ Yes, you need to add it to your theme!</strong>
+                <p>Here are the exact steps to add the reseller selection to your Shopify admin.</p>
+            </div>
+
+            <div class="step">
+                <h3>Method 1: Admin Theme (Recommended)</h3>
+                <p>This adds the reseller selection to your Shopify admin interface:</p>
+                
+                <ol>
+                    <li>Go to your Shopify admin</li>
+                    <li>Navigate to <strong>Online Store > Themes</strong></li>
+                    <li>Click <strong>"Actions" > "Edit code"</strong> on your active theme</li>
+                    <li>Find the <code>theme.liquid</code> file</li>
+                    <li>Add this code just before the closing <code>&lt;/body&gt;</code> tag:</li>
+                </ol>
+                
+                <div class="code-block">
+&lt;!-- Reseller Selection Script --&gt;
+&lt;script&gt;
+  // Only load on product editing pages
+  if (window.location.pathname.includes('/admin/products/') && 
+      window.location.pathname.includes('/edit')) {
+    
+    const script = document.createElement('script');
+    script.src = '<span class="highlight">https://your-app-url.railway.app</span>/product-reseller-embed.js';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+&lt;/script&gt;
+                </div>
+                
+                <p><strong>Replace</strong> <span class="highlight">your-app-url.railway.app</span> with your actual Railway deployment URL.</p>
+            </div>
+
+            <div class="step">
+                <h3>Method 2: App Block (Alternative)</h3>
+                <p>If you want to add it as an app block in your theme:</p>
+                
+                <ol>
+                    <li>Create a new file called <code>sections/reseller-selection.liquid</code></li>
+                    <li>Add this content:</li>
+                </ol>
+                
+                <div class="code-block">
+&lt;!-- reseller-selection.liquid --&gt;
+&lt;div id="reseller-selection-app"&gt;
+  &lt;script src="<span class="highlight">https://your-app-url.railway.app</span>/product-reseller-embed.js"&gt;&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+  #reseller-selection-app {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+&lt;/style&gt;
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Method 3: Browser Extension (For Testing)</h3>
+                <p>To test immediately without modifying your theme:</p>
+                
+                <ol>
+                    <li>Install a browser extension like "User JavaScript and CSS"</li>
+                    <li>Add this rule:</li>
+                </ol>
+                
+                <div class="code-block">
+// URL: *://*.myshopify.com/admin/products/*
+// JavaScript:
+if (window.location.pathname.includes('/admin/products/')) {
+  const script = document.createElement('script');
+  script.src = 'https://your-app-url.railway.app/product-reseller-embed.js';
+  document.head.appendChild(script);
+}
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Important Notes:</strong>
+                <ul>
+                    <li>The script will <strong>only load on product editing pages</strong></li>
+                    <li>It won't affect your storefront or other admin pages</li>
+                    <li>Make sure to replace the URL with your actual Railway deployment URL</li>
+                    <li>Test on a development theme first if possible</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>Step-by-Step Instructions:</h3>
+                
+                <ol>
+                    <li><strong>Get Your App URL:</strong>
+                        <div class="code-block">Your Railway URL: <span class="highlight">https://your-app-name.railway.app</span></div>
+                    </li>
+                    
+                    <li><strong>Edit theme.liquid:</strong>
+                        <div class="code-block">
+// Find this line in theme.liquid:
+&lt;/body&gt;
+
+// Add this BEFORE the closing &lt;/body&gt; tag:
+&lt;script&gt;
+  if (window.location.pathname.includes('/admin/products/')) {
+    const script = document.createElement('script');
+    script.src = 'https://your-app-name.railway.app/product-reseller-embed.js';
+    document.head.appendChild(script);
+  }
+&lt;/script&gt;
+&lt;/body&gt;
+                        </div>
+                    </li>
+                    
+                    <li><strong>Save and Test:</strong>
+                        <ul>
+                            <li>Save the theme.liquid file</li>
+                            <li>Go to any product editing page in your Shopify admin</li>
+                            <li>You should see the reseller selection section appear!</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="success">
+                <strong>🎉 That's it!</strong>
+                <p>Once you add the script to your theme.liquid file, the reseller selection with checkboxes will appear on every product editing page in your Shopify admin.</p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/admin" class="btn">Back to Admin</a>
+                <a href="/shopify-admin-integration" class="btn" style="margin-left: 10px;">View Full Guide</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

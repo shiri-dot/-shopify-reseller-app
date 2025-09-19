@@ -392,6 +392,11 @@ app.get("/shopify-admin-integration", (req, res) => {
   );
 });
 
+// Theme integration guide
+app.get("/theme-integration-guide", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "theme-integration-guide.html"));
+});
+
 // Serve the main app (catch-all)
 app.get("*", shopify.ensureInstalledOnShop(), (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
