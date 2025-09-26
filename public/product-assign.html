@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assign Resellers to Product</title>
+    <link rel="stylesheet" href="admin-styles.css" />
+    <style>
+      .container { max-width: 920px; margin: 24px auto; background:#fff; border:1px solid #e1e3e5; border-radius:8px; padding:20px; }
+      .row { display:flex; gap:12px; align-items:center; }
+      .row + .row { margin-top:12px; }
+      input[type="text"] { padding:10px 12px; border:1px solid #d1d5db; border-radius:6px; flex:1; }
+      .btn { padding:10px 16px; border:none; border-radius:6px; cursor:pointer; }
+      .btn-primary { background:#007bff; color:#fff; }
+      .btn-secondary { background:#6c757d; color:#fff; }
+      .list { margin-top:16px; max-height:420px; overflow:auto; border:1px solid #e1e3e5; border-radius:6px; padding:12px; }
+      .item { display:flex; align-items:center; padding:10px; border:1px solid #e1e3e5; border-radius:6px; margin-bottom:8px; background:#fff; }
+      .item.selected { border-color:#007bff; background:#f0f8ff; }
+      .grow { flex:1; }
+      .note { font-size:12px; color:#6b7280; margin-top:6px; }
+      .message { margin-top:12px; padding:10px 12px; border-radius:6px; }
+      .message.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+      .message.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Assign Resellers to a Product</h2>
+      <div class="row">
+        <input id="productId" type="text" placeholder="Enter Shopify product ID (e.g., 8535785537793)" />
+        <button class="btn btn-secondary" id="loadBtn">Load</button>
+      </div>
+      <div class="note">Tip: Copy the ID from the product URL in Shopify Admin.</div>
+
+      <div id="resellerTools" style="display:none; margin-top:16px;" class="row">
+        <button class="btn btn-secondary" id="selectAll">Select All</button>
+        <button class="btn btn-secondary" id="clearAll">Clear All</button>
+        <div class="grow"></div>
+        <button class="btn btn-primary" id="saveBtn">Save Selection</button>
+      </div>
+
+      <div id="list" class="list"></div>
+      <div id="msg"></div>
+    </div>
+
+    <script>
+      const list = document.getElementById('list');
+      const msg = document.getElementById('msg');
+      const productIdInput = document.getElementById('productId');
+      const loadBtn = document.getElementById('loadBtn');
+      const tools = document.getElementById('resellerTools');
+      const selectAllBtn = document.getElementById('selectAll');
+      const clearAllBtn = document.getElementById('clearAll');
+      const saveBtn = document.getElementById('saveBtn');
+
+      let resellers = [];
+      let selected = [];
+      let currentProductId = null;
+
+      function showMessage(text, type) {
+        msg.className = `message ${type||''}`;
+        msg.textContent = text;
+      }
+
+      async function fetchResellers() {
+        const r = await fetch('/api/resellers');
+        if (!r.ok) throw new Error('Failed to load resellers');
+        return r.json();
+      }
+
+      async function fetchProductMetafields(pid) {
+        const r = await fetch(`/api/products/${pid}/metafields`);
+        if (!r.ok) return [];
+        return r.json();
+      }
+
+      function render() {
+        list.innerHTML = '';
+        if (resellers.length === 0) { list.innerHTML = '<div class="note">No resellers found.</div>'; return; }
+        resellers.forEach(r => {
+          const checked = selected.includes(r.id);
+          const div = document.createElement('div');
+          div.className = `item ${checked ? 'selected' : ''}`;
+          div.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} style="margin-right:10px;">
+                           <div class="grow"><div><strong>${r.name}</strong></div>${r.description?`<div class="note">${r.description}</div>`:''}</div>`;
+          const cb = div.querySelector('input');
+          cb.addEventListener('change', () => {
+            if (cb.checked) { if (!selected.includes(r.id)) selected.push(r.id); }
+            else { selected = selected.filter(id => id !== r.id); }
+            render();
+          });
+          list.appendChild(div);
+        });
+      }
+
+      async function load() {
+        msg.className = ''; msg.textContent = '';
+        const pid = productIdInput.value.trim();
+        if (!pid) { showMessage('Enter a product ID', 'error'); return; }
+        currentProductId = pid;
+        try {
+          [resellers] = await Promise.all([fetchResellers()]);
+          const mfs = await fetchProductMetafields(pid);
+          const mf = (mfs||[]).find(m => m.namespace==='custom' && m.key==='select_resellers');
+          if (mf && mf.value) {
+            try {
+              const parsed = typeof mf.value === 'string' ? JSON.parse(mf.value) : mf.value;
+              selected = Array.isArray(parsed) ? parsed.map(v => (typeof v==='object'&&v? v.id : v)).filter(Boolean) : [];
+            } catch (_) { selected = []; }
+          } else {
+            selected = [];
+          }
+          tools.style.display = 'flex';
+          render();
+          showMessage('Loaded product and reseller data', 'success');
+        } catch (e) {
+          showMessage(e.message, 'error');
+        }
+      }
+
+      async function save() {
+        if (!currentProductId) { showMessage('Load a product first', 'error'); return; }
+        saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+        try {
+          const r = await fetch(`/api/products/${currentProductId}/metafields`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ namespace:'custom', key:'select_resellers', value: selected, type:'json' })
+          });
+          if (!r.ok) throw new Error('Failed to save selection');
+          showMessage('Saved reseller selection', 'success');
+        } catch(e) { showMessage(e.message, 'error'); }
+        finally { saveBtn.disabled = false; saveBtn.textContent = 'Save Selection'; }
+      }
+
+      loadBtn.addEventListener('click', load);
+      selectAllBtn.addEventListener('click', () => { selected = resellers.map(r=>r.id); render(); });
+      clearAllBtn.addEventListener('click', () => { selected = []; render(); });
+      saveBtn.addEventListener('click', save);
+    </script>
+  </body>
+  </html>
+
+

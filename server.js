@@ -566,6 +566,11 @@ app.get("/product-resellers", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-resellers.html"));
 });
 
+// In-app product assignment page (enter product ID, assign resellers)
+app.get("/product-assign", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "product-assign.html"));
+});
+
 // Admin extension for product reseller selection
 app.get("/admin-extension", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-extension.html"));
