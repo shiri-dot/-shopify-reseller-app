@@ -547,6 +547,99 @@ app.post("/api/products/:id/metafields", async (req, res) => {
   }
 });
 
+// Search products by title (basic) for bulk assignment UI
+app.get("/api/products/search", async (req, res) => {
+  try {
+    const query = req.query.q || "";
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+
+    const client = new shopify.clients.Graphql({ session: session[0] });
+    const response = await client.query({
+      data: {
+        query: `
+          query searchProducts($first: Int!, $query: String) {
+            products(first: $first, query: $query) {
+              edges {
+                node { id title handle status }
+              }
+            }
+          }
+        `,
+        variables: { first: 50, query: query ? `title:*${query}*` : undefined },
+      },
+    });
+
+    const products = (response.body.data.products.edges || []).map((e) => ({
+      id: e.node.id,
+      legacyId: (e.node.id || "").replace("gid://shopify/Product/", ""),
+      title: e.node.title,
+      handle: e.node.handle,
+      status: e.node.status,
+    }));
+    res.json(products);
+  } catch (error) {
+    console.error("Error searching products:", error);
+    res.status(500).json({ error: "Failed to search products" });
+  }
+});
+
+// Bulk set product metafield custom.select_resellers for many products
+app.post("/api/products/bulk-metafield", async (req, res) => {
+  try {
+    const { productIds, resellerIds } = req.body;
+    if (!Array.isArray(productIds) || !Array.isArray(resellerIds)) {
+      return res
+        .status(400)
+        .json({ error: "productIds and resellerIds must be arrays" });
+    }
+
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+    const client = new shopify.clients.Graphql({ session: session[0] });
+
+    // Build metafieldsSet input for each product
+    const metafields = productIds.map((pid) => ({
+      ownerId: pid.startsWith("gid://") ? pid : `gid://shopify/Product/${pid}`,
+      namespace: "custom",
+      key: "select_resellers",
+      value: JSON.stringify(resellerIds),
+      type: "json",
+    }));
+
+    const response = await client.query({
+      data: {
+        query: `
+          mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+            metafieldsSet(metafields: $metafields) {
+              userErrors { field message }
+            }
+          }
+        `,
+        variables: { metafields },
+      },
+    });
+
+    const errors = response.body.data.metafieldsSet.userErrors;
+    if (errors && errors.length) {
+      return res.status(400).json({ error: "Some updates failed", details: errors });
+    }
+
+    res.json({ success: true, updated: productIds.length });
+  } catch (error) {
+    console.error("Error bulk setting metafields:", error);
+    res.status(500).json({ error: "Failed to bulk update metafields" });
+  }
+});
+
 // Admin interface routes (placed BEFORE catch-all)
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin.html"));
@@ -569,6 +662,11 @@ app.get("/product-resellers", (req, res) => {
 // In-app product assignment page (enter product ID, assign resellers)
 app.get("/product-assign", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-assign.html"));
+});
+
+// Bulk assignment UI
+app.get("/product-bulk-assign", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "product-bulk-assign.html"));
 });
 
 // Admin extension for product reseller selection
