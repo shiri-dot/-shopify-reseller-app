@@ -192,14 +192,23 @@
 
         async function loadProductResellers() {
             try {
-                const response = await fetch(`/api/products/${currentProductId}/resellers`);
-                if (!response.ok) throw new Error('Failed to load product resellers');
-                
-                const productResellers = await response.json();
-                selectedResellers = productResellers.map(r => r.id);
+                const response = await fetch(`/api/products/${currentProductId}/metafields`);
+                if (!response.ok) throw new Error('Failed to load product metafields');
+
+                const metafields = await response.json();
+                const mf = metafields.find(m => m.namespace === 'custom' && m.key === 'select_resellers');
+                if (!mf || !mf.value) {
+                    selectedResellers = [];
+                } else {
+                    let parsed = mf.value;
+                    try { parsed = typeof parsed === 'string' ? JSON.parse(parsed) : parsed; } catch(e) { parsed = []; }
+                    selectedResellers = Array.isArray(parsed)
+                      ? parsed.map(v => (typeof v === 'object' && v !== null ? v.id : v)).filter(Boolean)
+                      : [];
+                }
                 updateSelectedCount();
             } catch (error) {
-                console.error('Error loading product resellers:', error);
+                console.error('Error loading product metafield resellers:', error);
                 selectedResellers = [];
                 updateSelectedCount();
             }
@@ -266,12 +275,17 @@
             saveBtn.textContent = 'Saving...';
 
             try {
-                const response = await fetch(`/api/products/${currentProductId}/resellers`, {
+                const response = await fetch(`/api/products/${currentProductId}/metafields`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ resellerIds: selectedResellers }),
+                    body: JSON.stringify({
+                        namespace: 'custom',
+                        key: 'select_resellers',
+                        value: selectedResellers,
+                        type: 'json'
+                    }),
                 });
 
                 if (!response.ok) throw new Error('Failed to save resellers');
