@@ -571,6 +571,11 @@ app.get("/admin-extension", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-extension.html"));
 });
 
+// Simple admin action redirector: accepts ?id=PRODUCT_ID and opens selector
+app.get("/admin-action", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin-action.html"));
+});
+
 // Product reseller admin interface
 app.get("/product-reseller-admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "product-reseller-admin.html"));
