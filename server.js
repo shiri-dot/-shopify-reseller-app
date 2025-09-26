@@ -551,6 +551,7 @@ app.post("/api/products/:id/metafields", async (req, res) => {
 app.get("/api/products/search", async (req, res) => {
   try {
     const query = req.query.q || "";
+    const after = req.query.after || null;
     const session = await shopify.config.sessionStorage.findSessionsByShop(
       shopify.config.hostScheme + "://" + req.get("host")
     );
@@ -562,26 +563,34 @@ app.get("/api/products/search", async (req, res) => {
     const response = await client.query({
       data: {
         query: `
-          query searchProducts($first: Int!, $query: String) {
-            products(first: $first, query: $query) {
+          query searchProducts($first: Int!, $query: String, $after: String) {
+            products(first: $first, query: $query, after: $after) {
               edges {
                 node { id title handle status }
+                cursor
               }
+              pageInfo { hasNextPage endCursor }
             }
           }
         `,
-        variables: { first: 50, query: query ? `title:*${query}*` : undefined },
+        variables: { first: 50, query: query ? `title:*${query}*` : undefined, after },
       },
     });
 
-    const products = (response.body.data.products.edges || []).map((e) => ({
+    const connection = response.body.data.products;
+    const products = (connection.edges || []).map((e) => ({
       id: e.node.id,
       legacyId: (e.node.id || "").replace("gid://shopify/Product/", ""),
       title: e.node.title,
       handle: e.node.handle,
       status: e.node.status,
     }));
-    res.json(products);
+    res.json({
+      items: products,
+      nextCursor: connection.pageInfo?.hasNextPage
+        ? connection.pageInfo.endCursor
+        : null,
+    });
   } catch (error) {
     console.error("Error searching products:", error);
     res.status(500).json({ error: "Failed to search products" });
@@ -630,7 +639,9 @@ app.post("/api/products/bulk-metafield", async (req, res) => {
 
     const errors = response.body.data.metafieldsSet.userErrors;
     if (errors && errors.length) {
-      return res.status(400).json({ error: "Some updates failed", details: errors });
+      return res
+        .status(400)
+        .json({ error: "Some updates failed", details: errors });
     }
 
     res.json({ success: true, updated: productIds.length });
