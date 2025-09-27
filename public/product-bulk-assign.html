@@ -249,30 +249,22 @@
         }
       });
 
-      // Load all pages sequentially (be mindful of Shopify API rate limits)
+      // Load all products using the new endpoint
       loadAllBtn.addEventListener("click", async () => {
         loadAllBtn.disabled = true;
-        loadAllBtn.textContent = "Loading...";
+        loadAllBtn.textContent = "Loading all products...";
         try {
-          // If nothing loaded yet, load first page
-          if (products.length === 0) {
-            const first = await searchProducts();
-            products = first.items || [];
-            nextCursor = first.nextCursor || null;
-            renderList(productList, products, true);
+          const response = await fetch("/api/products/all");
+          if (!response.ok) {
+            throw new Error("Failed to load all products");
           }
-          // Iterate cursors with small delay
-          while (nextCursor) {
-            const result = await searchProducts(nextCursor);
-            const more = result.items || [];
-            nextCursor = result.nextCursor || null;
-            products = products.concat(more);
-            renderList(productList, products, true);
-            await new Promise((r) => setTimeout(r, 250)); // gentle pacing
-          }
-          showMessage(`Loaded ${products.length} products`, "success");
+          const result = await response.json();
+          products = result.items || [];
+          selectedProductIds.clear();
+          renderList(productList, products, true);
+          showMessage(`✅ Loaded ${products.length} products successfully`, "success");
         } catch (e) {
-          showMessage(e.message, "error");
+          showMessage(`❌ ${e.message}`, "error");
         } finally {
           loadAllBtn.disabled = false;
           loadAllBtn.textContent = "Load all";

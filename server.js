@@ -601,6 +601,83 @@ app.get("/api/products/search", async (req, res) => {
   }
 });
 
+// Load all products for bulk assignment
+app.get("/api/products/all", async (req, res) => {
+  try {
+    const session = await shopify.config.sessionStorage.findSessionsByShop(
+      shopify.config.hostScheme + "://" + req.get("host")
+    );
+    if (!session || session.length === 0) {
+      return res.status(401).json({ error: "No session found" });
+    }
+
+    const client = new shopify.clients.Graphql({ session: session[0] });
+    let allProducts = [];
+    let hasNextPage = true;
+    let cursor = null;
+
+    // Fetch all products in batches
+    while (hasNextPage) {
+      const response = await client.query({
+        data: {
+          query: `
+            query getAllProducts($first: Int!, $after: String) {
+              products(first: $first, after: $after) {
+                edges {
+                  node { 
+                    id 
+                    title 
+                    handle 
+                    status 
+                    createdAt
+                    updatedAt
+                  }
+                  cursor
+                }
+                pageInfo { 
+                  hasNextPage 
+                  endCursor 
+                }
+              }
+            }
+          `,
+          variables: {
+            first: 250, // Maximum allowed by Shopify
+            after: cursor,
+          },
+        },
+      });
+
+      const connection = response.body.data.products;
+      const products = (connection.edges || []).map((e) => ({
+        id: e.node.id,
+        legacyId: (e.node.id || "").replace("gid://shopify/Product/", ""),
+        title: e.node.title,
+        handle: e.node.handle,
+        status: e.node.status,
+        createdAt: e.node.createdAt,
+        updatedAt: e.node.updatedAt,
+      }));
+
+      allProducts = allProducts.concat(products);
+      hasNextPage = connection.pageInfo?.hasNextPage || false;
+      cursor = connection.pageInfo?.endCursor || null;
+
+      console.log(`Loaded ${allProducts.length} products so far...`);
+    }
+
+    console.log(`✅ Successfully loaded ${allProducts.length} total products`);
+    res.json({
+      items: allProducts,
+      total: allProducts.length,
+      message: `Successfully loaded ${allProducts.length} products`,
+    });
+  } catch (error) {
+    console.error("Error loading all products:", error);
+    res.status(500).json({ error: "Failed to load all products" });
+  }
+});
+
 // Bulk set product metafield custom.select_resellers for many products
 app.post("/api/products/bulk-metafield", async (req, res) => {
   try {
