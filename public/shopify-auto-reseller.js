@@ -13,10 +13,10 @@
   // Available resellers (will be loaded from your app)
   let AVAILABLE_RESELLERS = [
     "Reseller A",
-    "Reseller B", 
+    "Reseller B",
     "Reseller C",
     "Reseller D",
-    "Reseller E"
+    "Reseller E",
   ];
 
   // Check if we're on a product editing page
@@ -35,13 +35,16 @@
       const response = await fetch(`${API_BASE_URL}/api/resellers`);
       if (response.ok) {
         const resellers = await response.json();
-        AVAILABLE_RESELLERS = resellers.map(r => r.name);
+        AVAILABLE_RESELLERS = resellers.map((r) => r.name);
         console.log("✅ Loaded resellers from app:", AVAILABLE_RESELLERS);
       } else {
         console.log("⚠️ Using default resellers (app not available)");
       }
     } catch (error) {
-      console.log("⚠️ Using default resellers (app not available):", error.message);
+      console.log(
+        "⚠️ Using default resellers (app not available):",
+        error.message
+      );
     }
   }
 
@@ -133,9 +136,11 @@
           cursor: pointer;
         ">
           <option value="">-- Select a reseller --</option>
-          ${AVAILABLE_RESELLERS.map(reseller => `
+          ${AVAILABLE_RESELLERS.map(
+            (reseller) => `
             <option value="${reseller}">${reseller}</option>
-          `).join('')}
+          `
+          ).join("")}
         </select>
       </div>
       
@@ -187,7 +192,7 @@
   function updateSelectedDisplay() {
     const select = document.getElementById("auto-reseller-select");
     const display = document.getElementById("auto-selected-reseller");
-    
+
     if (select.value) {
       display.innerHTML = `<strong>Selected:</strong> ${select.value}`;
       display.style.color = "#155724";
@@ -279,11 +284,11 @@
       }
     } catch (error) {
       console.error("❌ Error saving to metafield:", error);
-      
+
       const productId = window.location.pathname.match(
         /\/admin\/products\/(\d+)/
       )?.[1];
-      
+
       if (productId) {
         localStorage.setItem(`auto_reseller_${productId}`, selectedReseller);
       }
@@ -355,7 +360,8 @@
       }
 
       // Add event listeners
-      document.getElementById("auto-reseller-select").onchange = updateSelectedDisplay;
+      document.getElementById("auto-reseller-select").onchange =
+        updateSelectedDisplay;
 
       document.getElementById("auto-clear-reseller").onclick = () => {
         const select = document.getElementById("auto-reseller-select");
