@@ -9,15 +9,19 @@ document.addEventListener("DOMContentLoaded", function () {
       const currentTab = tabs[0];
       const url = currentTab.url;
 
-       if (url && (url.includes("myshopify.com/admin/products") || url.includes("admin.shopify.com/store/"))) {
-         statusDiv.className = "status active";
-         statusDiv.textContent =
-           "✅ Active on product page - Reseller selection available!";
-       } else {
-         statusDiv.className = "status inactive";
-         statusDiv.textContent =
-           "⚠️ Go to a Shopify product page to use this extension";
-       }
+      if (
+        url &&
+        (url.includes("myshopify.com/admin/products") ||
+          url.includes("admin.shopify.com/store/"))
+      ) {
+        statusDiv.className = "status active";
+        statusDiv.textContent =
+          "✅ Active on product page - Reseller selection available!";
+      } else {
+        statusDiv.className = "status inactive";
+        statusDiv.textContent =
+          "⚠️ Go to a Shopify product page to use this extension";
+      }
     });
   }
 

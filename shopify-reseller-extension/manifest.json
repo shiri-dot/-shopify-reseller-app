@@ -6,7 +6,10 @@
   "permissions": ["activeTab", "scripting"],
   "content_scripts": [
     {
-      "matches": ["https://*.myshopify.com/admin/products/*", "https://admin.shopify.com/store/*/products/*"],
+      "matches": [
+        "https://*.myshopify.com/admin/products/*",
+        "https://admin.shopify.com/store/*/products/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_end"
     }
