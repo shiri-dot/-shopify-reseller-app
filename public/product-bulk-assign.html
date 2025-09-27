@@ -250,8 +250,9 @@
       });
 
       // Load all pages sequentially (be mindful of Shopify API rate limits)
-      loadAllBtn.addEventListener('click', async () => {
-        loadAllBtn.disabled = true; loadAllBtn.textContent = 'Loading...';
+      loadAllBtn.addEventListener("click", async () => {
+        loadAllBtn.disabled = true;
+        loadAllBtn.textContent = "Loading...";
         try {
           // If nothing loaded yet, load first page
           if (products.length === 0) {
@@ -267,13 +268,14 @@
             nextCursor = result.nextCursor || null;
             products = products.concat(more);
             renderList(productList, products, true);
-            await new Promise(r => setTimeout(r, 250)); // gentle pacing
+            await new Promise((r) => setTimeout(r, 250)); // gentle pacing
           }
-          showMessage(`Loaded ${products.length} products`, 'success');
+          showMessage(`Loaded ${products.length} products`, "success");
         } catch (e) {
-          showMessage(e.message, 'error');
+          showMessage(e.message, "error");
         } finally {
-          loadAllBtn.disabled = false; loadAllBtn.textContent = 'Load all';
+          loadAllBtn.disabled = false;
+          loadAllBtn.textContent = "Load all";
         }
       });
       selectAllProducts.addEventListener("click", () => {

@@ -16,10 +16,19 @@
   // Check if we're on a product editing page
   function isProductEditPage() {
     const path = window.location.pathname;
-    return (
-      path.includes("/admin/products/") &&
-      (path.includes("/edit") || path.match(/\/admin\/products\/\d+$/))
-    );
+    const isProductPage = path.includes("/admin/products/");
+    const isEditPage =
+      path.includes("/edit") || path.match(/\/admin\/products\/\d+$/);
+    const result = isProductPage && isEditPage;
+
+    console.log("🔍 Page Detection Debug:", {
+      path: path,
+      isProductPage: isProductPage,
+      isEditPage: isEditPage,
+      result: result,
+    });
+
+    return result;
   }
 
   // Wait for element with timeout
@@ -532,48 +541,180 @@
 
     console.log("✅ On product editing page, starting initialization...");
 
-    // Wait for the page to be fully loaded
-    waitForElement("body", function () {
+    // Wait for the page to be fully loaded with multiple attempts
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    function tryInitialize() {
+      attempts++;
+      console.log(`🔄 Initialization attempt ${attempts}/${maxAttempts}`);
+
       // Check if reseller section already exists
       if (document.getElementById(RESELLER_SECTION_ID)) {
         console.log("❌ Reseller section already exists, skipping");
         return;
       }
 
-      // Find insertion point
+      // Find insertion point with more comprehensive selectors
       let insertionPoint = document.body;
-
-      // Try to find a better insertion point
       const possiblePoints = [
         ".Polaris-Page__Content",
         ".admin-content",
         ".product-details",
         ".product-editor",
         ".product-form-container",
+        ".product-form",
+        ".product-edit",
+        "[data-testid='product-form']",
+        ".product-page",
         "main",
         ".content",
+        ".app",
+        "#AppFrameMain",
       ];
 
+      console.log("🔍 Looking for insertion points...");
       for (const selector of possiblePoints) {
         const element = document.querySelector(selector);
         if (element) {
           insertionPoint = element;
-          console.log("✅ Found insertion point:", selector);
+          console.log("✅ Found insertion point:", selector, element);
           break;
         }
       }
 
-      // Create and insert the reseller section
-      console.log("🏗️ Creating reseller section...");
-      const resellerSection = createResellerUI();
-      insertionPoint.appendChild(resellerSection);
+      // If we found a good insertion point or this is our last attempt, proceed
+      if (insertionPoint !== document.body || attempts >= maxAttempts) {
+        console.log("🏗️ Creating reseller section...");
+        const resellerSection = createResellerUI();
 
-      console.log("✅ Reseller section created and inserted");
+        // Make it more visible during testing
+        resellerSection.style.border = "3px solid #ff6b6b";
+        resellerSection.style.backgroundColor = "#fff5f5";
 
-      // Initialize the functionality
-      initialize();
-    });
+        insertionPoint.appendChild(resellerSection);
+        console.log(
+          "✅ Reseller section created and inserted at:",
+          insertionPoint
+        );
+
+        // Initialize the functionality
+        initialize();
+      } else if (attempts < maxAttempts) {
+        // Wait a bit more and try again
+        setTimeout(tryInitialize, 500);
+      } else {
+        console.error(
+          "❌ Failed to find suitable insertion point after",
+          maxAttempts,
+          "attempts"
+        );
+        // Fallback: insert at body anyway
+        console.log("🏗️ Creating reseller section as fallback...");
+        const resellerSection = createResellerUI();
+        resellerSection.style.border = "3px solid #ff6b6b";
+        resellerSection.style.backgroundColor = "#fff5f5";
+        document.body.appendChild(resellerSection);
+        initialize();
+      }
+    }
+
+    // Start the initialization process
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", tryInitialize);
+    } else {
+      tryInitialize();
+    }
   }
+
+  // Manual trigger function for debugging
+  window.triggerResellerInit = function () {
+    console.log("🚀 Manual trigger called");
+    init();
+  };
+
+  // Test API connection function
+  window.testResellerAPI = async function () {
+    console.log("🧪 Testing API connection...");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/resellers`);
+      if (response.ok) {
+        const resellers = await response.json();
+        console.log("✅ API working! Found resellers:", resellers.length);
+        console.log("📋 Reseller list:", resellers);
+      } else {
+        console.error("❌ API error:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("❌ API connection failed:", error);
+    }
+  };
+
+  // Add visible buttons to manually trigger if needed
+  setTimeout(() => {
+    if (!document.getElementById("manual-reseller-trigger")) {
+      // Create container for buttons
+      const buttonContainer = document.createElement("div");
+      buttonContainer.id = "reseller-debug-buttons";
+      buttonContainer.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      `;
+
+      // Show Reseller Selection button
+      const triggerBtn = document.createElement("button");
+      triggerBtn.id = "manual-reseller-trigger";
+      triggerBtn.innerHTML = "🏪 Show Reseller Selection";
+      triggerBtn.style.cssText = `
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      `;
+      triggerBtn.onclick = () => {
+        window.triggerResellerInit();
+        buttonContainer.style.display = "none";
+      };
+
+      // Test API button
+      const testBtn = document.createElement("button");
+      testBtn.innerHTML = "🧪 Test API";
+      testBtn.style.cssText = `
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        font-size: 12px;
+      `;
+      testBtn.onclick = () => {
+        window.testResellerAPI();
+      };
+
+      buttonContainer.appendChild(triggerBtn);
+      buttonContainer.appendChild(testBtn);
+      document.body.appendChild(buttonContainer);
+
+      // Auto-hide after 15 seconds
+      setTimeout(() => {
+        if (buttonContainer.parentNode) {
+          buttonContainer.parentNode.removeChild(buttonContainer);
+        }
+      }, 15000);
+    }
+  }, 3000);
 
   // Start when DOM is ready
   if (document.readyState === "loading") {
@@ -583,4 +724,6 @@
   }
 
   console.log("🏪 Shopify Admin Reseller Script Loaded");
+  console.log("📍 Current URL:", window.location.href);
+  console.log("🔧 Script version: Enhanced Debug Version 1.0");
 })();

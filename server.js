@@ -573,7 +573,11 @@ app.get("/api/products/search", async (req, res) => {
             }
           }
         `,
-        variables: { first: 50, query: query ? `title:*${query}*` : undefined, after },
+        variables: {
+          first: 50,
+          query: query ? `title:*${query}*` : undefined,
+          after,
+        },
       },
     });
 
