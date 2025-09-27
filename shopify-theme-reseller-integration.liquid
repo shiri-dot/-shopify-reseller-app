@@ -1,0 +1,215 @@
+{% comment %}
+  Shopify Theme Integration for Reseller Selection
+  Add this code to your product template to show reseller selection directly
+{% endcomment %}
+
+{% comment %} Only show on product pages {% endcomment %}
+{% if template contains 'product' %}
+
+<div id="reseller-selection-widget" style="
+  background: white;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+">
+  <div style="
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #28a745;
+  ">
+    <h3 style="
+      margin: 0;
+      color: #2c3e50;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    ">
+      🏪 Product Reseller
+    </h3>
+  </div>
+  
+  <div style="margin-bottom: 20px;">
+    <p style="
+      margin: 0 0 15px 0;
+      color: #6c757d;
+      font-size: 14px;
+      line-height: 1.4;
+    ">
+      This product is available through our authorized resellers.
+    </p>
+  </div>
+  
+  <div style="margin-bottom: 20px;">
+    <label style="
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 14px;
+    ">Select Reseller:</label>
+    
+    <select id="theme-reseller-select" style="
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e1e3e5;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    ">
+      <option value="">-- Select a reseller --</option>
+      <option value="Reseller A">Reseller A</option>
+      <option value="Reseller B">Reseller B</option>
+      <option value="Reseller C">Reseller C</option>
+      <option value="Reseller D">Reseller D</option>
+      <option value="Reseller E">Reseller E</option>
+    </select>
+  </div>
+  
+  <div style="
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #e1e3e5;
+  ">
+    <div id="theme-selected-reseller" style="
+      font-size: 13px;
+      color: #6c757d;
+      flex: 1;
+    ">No reseller selected</div>
+    
+    <div style="display: flex; gap: 10px;">
+      <button id="theme-clear-reseller" style="
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+      ">Clear</button>
+      
+      <button id="theme-save-reseller" style="
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+      ">Save Reseller</button>
+    </div>
+  </div>
+  
+  <div id="theme-reseller-messages" style="margin-top: 15px;"></div>
+</div>
+
+<script>
+// Theme-integrated reseller selection
+(function() {
+  'use strict';
+  
+  console.log('🏪 Theme Reseller Widget Loading...');
+  
+  // Available resellers
+  const resellers = [
+    "Reseller A",
+    "Reseller B", 
+    "Reseller C",
+    "Reseller D",
+    "Reseller E"
+  ];
+  
+  // Update display
+  function updateDisplay() {
+    const select = document.getElementById('theme-reseller-select');
+    const display = document.getElementById('theme-selected-reseller');
+    
+    if (select.value) {
+      display.innerHTML = '<strong>Selected:</strong> ' + select.value;
+      display.style.color = '#155724';
+    } else {
+      display.textContent = 'No reseller selected';
+      display.style.color = '#6c757d';
+    }
+  }
+  
+  // Show message
+  function showMessage(message, type = 'success') {
+    const messagesDiv = document.getElementById('theme-reseller-messages');
+    if (!messagesDiv) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      background: ${type === 'error' ? '#f8d7da' : '#d4edda'};
+      color: ${type === 'error' ? '#721c24' : '#155724'};
+      border: 1px solid ${type === 'error' ? '#f5c6cb' : '#c3e6cb'};
+      border-left: 4px solid ${type === 'error' ? '#dc3545' : '#28a745'};
+    `;
+    messageDiv.textContent = message;
+    messagesDiv.appendChild(messageDiv);
+    
+    setTimeout(() => messageDiv.remove(), 5000);
+  }
+  
+  // Save reseller (simplified version for theme)
+  function saveReseller() {
+    const select = document.getElementById('theme-reseller-select');
+    const selectedReseller = select.value;
+    
+    if (!selectedReseller) {
+      showMessage('Please select a reseller', 'error');
+      return;
+    }
+    
+    // For theme integration, we'll save to localStorage
+    // In a full implementation, you'd make an API call to save to metafields
+    localStorage.setItem('selected_reseller_{{ product.id }}', selectedReseller);
+    
+    showMessage('✅ Reseller saved! (Theme Mode)', 'success');
+    console.log('🏪 Saved reseller:', selectedReseller);
+  }
+  
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load saved reseller
+    const saved = localStorage.getItem('selected_reseller_{{ product.id }}');
+    if (saved) {
+      const select = document.getElementById('theme-reseller-select');
+      select.value = saved;
+      updateDisplay();
+    }
+    
+    // Add event listeners
+    document.getElementById('theme-reseller-select').onchange = updateDisplay;
+    
+    document.getElementById('theme-clear-reseller').onclick = function() {
+      const select = document.getElementById('theme-reseller-select');
+      select.value = '';
+      updateDisplay();
+    };
+    
+    document.getElementById('theme-save-reseller').onclick = saveReseller;
+    
+    console.log('✅ Theme reseller widget initialized!');
+  });
+})();
+</script>
+
+{% endif %}

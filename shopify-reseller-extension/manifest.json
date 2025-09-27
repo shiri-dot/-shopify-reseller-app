@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Shopify Reseller Selector",
+  "version": "1.0",
+  "description": "Automatically adds reseller selection to Shopify product pages",
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.myshopify.com/admin/products/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Shopify Reseller Selector"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
