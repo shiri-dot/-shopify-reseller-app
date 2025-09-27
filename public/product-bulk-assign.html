@@ -194,22 +194,73 @@
         const q = search.value.trim();
         if (q) params.set("q", q);
         if (cursor) params.set("after", cursor);
-        const r = await fetch(`/api/products/search?${params.toString()}`);
-        if (!r.ok) throw new Error("Failed to search products");
-        return r.json();
+        
+        console.log("🔍 Searching products with params:", params.toString());
+        
+        try {
+          const r = await fetch(`/api/products/search?${params.toString()}`);
+          console.log("📡 API Response status:", r.status, r.statusText);
+          
+          if (!r.ok) {
+            const errorText = await r.text();
+            console.error("❌ API Error:", errorText);
+            throw new Error(`Failed to search products: ${r.status} ${r.statusText}`);
+          }
+          
+          const result = await r.json();
+          console.log("✅ API Response data:", result);
+          return result;
+        } catch (error) {
+          console.error("❌ Search products error:", error);
+          throw error;
+        }
+      }
+
+      async function testServerConnection() {
+        try {
+          console.log("🔍 Testing server connection...");
+          const response = await fetch("/api/test");
+          if (!response.ok) {
+            throw new Error(`Server test failed: ${response.status}`);
+          }
+          const result = await response.json();
+          console.log("✅ Server connection test:", result);
+          return true;
+        } catch (error) {
+          console.error("❌ Server connection test failed:", error);
+          return false;
+        }
       }
 
       async function init() {
+        console.log("🚀 Initializing bulk assignment page...");
         try {
+          // Test server connection first
+          const serverOk = await testServerConnection();
+          if (!serverOk) {
+            showMessage("❌ Cannot connect to server. Please check if the server is running.", "error");
+            return;
+          }
+
+          console.log("📥 Loading resellers...");
           resellers = await loadResellers();
+          console.log("✅ Loaded resellers:", resellers.length);
           renderList(resellerList, resellers, false);
+          
+          console.log("📥 Loading initial products...");
           // initial load of first 50 products
           const result = await searchProducts();
           products = result.items || [];
           nextCursor = result.nextCursor || null;
+          console.log("✅ Loaded products:", products.length);
           renderList(productList, products, true);
+          
+          if (products.length === 0) {
+            showMessage("No products found. Try clicking 'Load all' to load all products.", "error");
+          }
         } catch (e) {
-          showMessage(e.message, "error");
+          console.error("❌ Initialization error:", e);
+          showMessage(`Initialization failed: ${e.message}`, "error");
         }
       }
 
@@ -253,17 +304,30 @@
       loadAllBtn.addEventListener("click", async () => {
         loadAllBtn.disabled = true;
         loadAllBtn.textContent = "Loading all products...";
+        console.log("🔄 Loading all products...");
+        
         try {
           const response = await fetch("/api/products/all");
+          console.log("📡 Load all response status:", response.status, response.statusText);
+          
           if (!response.ok) {
-            throw new Error("Failed to load all products");
+            const errorText = await response.text();
+            console.error("❌ Load all API error:", errorText);
+            throw new Error(`Failed to load all products: ${response.status} ${response.statusText}`);
           }
+          
           const result = await response.json();
+          console.log("✅ Load all response data:", result);
+          
           products = result.items || [];
           selectedProductIds.clear();
           renderList(productList, products, true);
-          showMessage(`✅ Loaded ${products.length} products successfully`, "success");
+          showMessage(
+            `✅ Loaded ${products.length} products successfully`,
+            "success"
+          );
         } catch (e) {
+          console.error("❌ Load all error:", e);
           showMessage(`❌ ${e.message}`, "error");
         } finally {
           loadAllBtn.disabled = false;

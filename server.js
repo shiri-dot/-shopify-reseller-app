@@ -90,6 +90,15 @@ app.use(
 
 // API Routes for Resellers
 
+// Test endpoint to verify server is running
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    status: "Server is running", 
+    timestamp: new Date().toISOString(),
+    message: "Reseller Management API is working"
+  });
+});
+
 // Get all resellers
 app.get("/api/resellers", (req, res) => {
   try {
